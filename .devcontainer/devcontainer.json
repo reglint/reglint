@@ -1,10 +1,11 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
 	"name": "RegLint Dev Container",
 	"image": "mcr.microsoft.com/devcontainers/universal:5-linux",
 
 	"runArgs": [
 		"--env-file", "${localWorkspaceFolder}/.env",
-		"--userns=keep-id", // For podman users, to avoid permission issues with bind mountson on rootless mode.
 		"--memory", "8g"
 	],
 
@@ -37,7 +38,12 @@
 			"source": "${localWorkspaceFolder}/.devcontainer/pull-git-lfs-artifacts-override.sh",
 			"target": "/usr/local/share/pull-git-lfs-artifacts.sh",
 			"type": "bind"
-		}
+		},
+		{
+      "source": "${localEnv:HOME}/.omp",
+      "target": "/home/codespace/.omp",
+      "type": "bind"
+    }
 	],
 
 	"remoteEnv": {
@@ -54,7 +60,7 @@
 		"OPENCODE_EXPERIMENTAL_ICON_DISCOVERY": "true",
 		"OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS": "300000",
 		// "PLAYWRIGHT_DOCKER_IMAGE": "mcr.microsoft.com/playwright:v1.58.2-noble",
-		"PATH": "${containerEnv:PATH}:scripts:${containerEnv:GOPATH}/bin",
+		"PATH": "${containerEnv:PATH}:scripts:bin",
 		// For usage with /editr command from OpenCode - https://opencode.ai/docs/tui/#editor-setup
 		"EDITOR": "code --wait",
 		"VISUAL": "code --wait",
@@ -64,10 +70,6 @@
 		"XDG_STATE_HOME": "/home/codespace/.local/state"
 	},
 
-	"containerEnv": {
-		"GOTOOLCHAIN": "go1.25.7+auto"
-	},
-
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:": {
 			"installZsh": false,
@@ -75,23 +77,15 @@
 			"installOhMyZshConfig": false,
 			"username": "automatic"
 		},
-		"ghcr.io/devcontainers/features/go:": {
-			"version": "1.25"
-		},
 		"ghcr.io/devcontainers-extra/features/shfmt:": {},
-		"ghcr.io/devcontainers-extra/features/npm-packages:": {
-			"packages": "repomix"
-		},
-		// "ghcr.io/devcontainers-extra/features/uv:": {},
 		"ghcr.io/devcontainers-extra/features/opencode:": {},
-		"ghcr.io/iyaki/devcontainer-features/ralph:": {},
+		"ghcr.io/iyaki/devcontainer-features/oh-my-pi:": {},
 		"ghcr.io/iyaki/devcontainer-features/lefthook:": {}
 	},
 
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"sst-dev.opencode",
 				"editorconfig.editorconfig",
 				"golang.go",
 				"nhoizey.gremlins"
@@ -104,20 +98,6 @@
 		"Install npm packages": "npm install",
 		"Install go tools": "/bin/bash .devcontainer/install-go-tools.sh",
 		"Setup lefthook": "lefthook install"
-	},
-	"postStartCommand": {
-		"Refresh opencode available models": "opencode models --refresh"
-	},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [
-		// Add your own ports here
-		4096
-	],
-	"portsAttributes": {
-		"4096": {
-			"label": "Default OpenCode server"
-		}
 	}
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
