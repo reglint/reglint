@@ -8,6 +8,16 @@ RegLint is a regex-based linter for source repositories. It scans files using YA
 
 ## Install
 
+### One-line install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/iyaki/reglint/main/install.sh | sh
+```
+
+Detects your platform, verifies the SHA-256 checksum, and installs to `~/.local/bin` (override with `REGLINT_INSTALL_DIR` or pin with `REGLINT_VERSION=v0.1.0`).
+
+### Go install
+
 Requires Go 1.25 or newer:
 
 ```bash

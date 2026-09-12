@@ -33,3 +33,10 @@ jobs:
                 || 'release --clean' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Smoke test install script
+        if: github.event_name == 'push'
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/install.sh" | REGLINT_VERSION="${{ github.ref_name }}" sh
+          want="${GITHUB_REF_NAME#v}"
+          "$HOME/.local/bin/reglint" version | grep -F " $want"
