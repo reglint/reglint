@@ -1670,6 +1670,7 @@ func expectedRootHelpOutput() string {
 		"Commands:\n" +
 		"  analyze (alias: analyse)\n" +
 		"  init\n" +
+		"  version\n" +
 		"\n" +
 		"Flags:\n" +
 		"  -h, --help bool (default false)  Print help and exit.\n"

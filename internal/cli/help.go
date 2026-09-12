@@ -33,6 +33,8 @@ func getHelpTopic(name string) (HelpTopic, bool) {
 		return analyzeHelpTopic(), true
 	case "init":
 		return initHelpTopic(), true
+	case "version":
+		return versionHelpTopic(), true
 	default:
 		return HelpTopic{}, false
 	}
@@ -85,6 +87,7 @@ func rootCommands() []string {
 	return []string{
 		"analyze (alias: analyse)",
 		"init",
+		"version",
 	}
 }
 
@@ -265,6 +268,16 @@ func initHelpTopic() HelpTopic {
 				Default:     "false",
 				Description: "Overwrite existing config file.",
 			},
+		},
+	}
+}
+
+func versionHelpTopic() HelpTopic {
+	return HelpTopic{
+		Name:  "version",
+		Usage: []string{"reglint version"},
+		Flags: []HelpFlag{
+			helpFlag(),
 		},
 	}
 }
