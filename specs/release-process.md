@@ -90,6 +90,10 @@ Each release also ships a `checksums.txt` with SHA-256 sums for all archives.
 
 The `release` workflow smoke-tests it on every tag push: it installs from the tag's own `install.sh` and asserts `reglint version` matches the tag.
 
+### Homebrew tap
+
+Every tag-push release updates the `iyaki/homebrew-tap` formula via GoReleaser, so `brew install iyaki/tap/reglint` tracks the newest release. Pushing to the tap repository requires the `TAP_GITHUB_TOKEN` secret (a token with write access to `iyaki/homebrew-tap`) because the workflow `GITHUB_TOKEN` is scoped to this repository only.
+
 ## Verifications
 
 - Pushing a `vX.Y.Z` tag produces a published (non-draft) GitHub Release with 6 archives plus `checksums.txt`.
