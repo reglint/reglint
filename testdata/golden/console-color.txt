@@ -1,18 +1,18 @@
 a/file.go
 - [31mERROR[0m 2:5 Error msg
-  /workspaces/regex-checker/internal/output/a/file.go:2
+  <PKG_DIR>/a/file.go:2
 
 - [33mWARN[0m  2:5 Alpha warn
-  /workspaces/regex-checker/internal/output/a/file.go:2
+  <PKG_DIR>/a/file.go:2
 
 - [33mWARN[0m  2:5 Zulu warn
-  /workspaces/regex-checker/internal/output/a/file.go:2
+  <PKG_DIR>/a/file.go:2
 
 - [34mINFO[0m  10:1 Info msg
-  /workspaces/regex-checker/internal/output/a/file.go:10
+  <PKG_DIR>/a/file.go:10
 
 b/file.go
 - [33mWARN[0m  2:3 Warn msg
-  /workspaces/regex-checker/internal/output/b/file.go:2
+  <PKG_DIR>/b/file.go:2
 
 Summary: files=2 skipped=1 matches=5 durationMs=12

@@ -171,6 +171,12 @@ func goldenSarifResult() scan.Result {
 func assertGoldenBytes(t *testing.T, name string, data []byte) {
 	t.Helper()
 
+	// ponytail: normalize checkout dir so goldens survive repo directory renames
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get working directory: %v", err)
+	}
+	data = bytes.ReplaceAll(data, []byte(cwd), []byte("<PKG_DIR>"))
 	path := goldenPath(name)
 	if os.Getenv("UPDATE_GOLDEN") == "1" {
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -187,6 +193,7 @@ func assertGoldenBytes(t *testing.T, name string, data []byte) {
 	if err != nil {
 		t.Fatalf("failed to read golden file: %v", err)
 	}
+	golden = bytes.ReplaceAll(golden, []byte(cwd), []byte("<PKG_DIR>"))
 	if !bytes.Equal(golden, data) {
 		t.Fatalf("golden mismatch for %s", name)
 	}
