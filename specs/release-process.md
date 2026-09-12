@@ -94,6 +94,10 @@ The `release` workflow smoke-tests it on every tag push: it installs from the ta
 
 Every tag-push release updates the `iyaki/homebrew-tap` formula via GoReleaser, so `brew install iyaki/tap/reglint` tracks the newest release. Pushing to the tap repository requires the `TAP_GITHUB_TOKEN` secret (a token with write access to `iyaki/homebrew-tap`) because the workflow `GITHUB_TOKEN` is scoped to this repository only.
 
+### GitHub Action
+
+`action.yml` at the repository root is a composite action (`iyaki/reglint@action-v*`) that installs the release binary through `install.sh` and runs `reglint analyze` with `config`, `paths`, and `fail-on` inputs; the scan's exit code fails the step. Action versions use the `action-v*` tag namespace so they never trigger the `v*` release workflow. `.github/workflows/action-smoke.yml` exercises the action on clean and violating trees on every change to `action.yml` or `install.sh`.
+
 ## Verifications
 
 - Pushing a `vX.Y.Z` tag produces a published (non-draft) GitHub Release with 6 archives plus `checksums.txt`.

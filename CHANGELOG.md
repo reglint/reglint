@@ -22,3 +22,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Tag-triggered GoReleaser release pipeline producing cross-platform binaries and checksums.
 - One-line `curl | sh` installer (`install.sh`) with SHA-256 checksum verification, installing to `~/.local/bin`.
 - Homebrew formula published to `iyaki/homebrew-tap` on every release (`brew install iyaki/tap/reglint`).
+- GitHub Action (`iyaki/reglint@action-v*`) to run scans in workflows, installing the release binary with checksum verification.
