@@ -8,6 +8,12 @@ RegLint is a regex-based linter for source repositories. It scans files using YA
 
 ## Install
 
+### Homebrew
+
+```bash
+brew install iyaki/tap/reglint
+```
+
 ### One-line install
 
 ```bash
