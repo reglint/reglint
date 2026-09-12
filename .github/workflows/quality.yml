@@ -56,7 +56,7 @@ jobs:
         with:
           go-version: "~1.25.8"
       - name: install gremlins
-        run: go install github.com/go-gremlins/gremlins/cmd/gremlins@latest
+        run: go install github.com/go-gremlins/gremlins/cmd/gremlins@v0.6.0
       - name: mutation
         if: ${{ hashFiles('**/*.go') != '' }}
         run: make mutation
