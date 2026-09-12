@@ -1,6 +1,6 @@
 # Git Integration
 
-Status: Proposed
+Status: Implemented
 
 ## Overview
 

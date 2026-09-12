@@ -1,6 +1,6 @@
 # Ignore Files Support
 
-Status: Proposed
+Status: Implemented
 
 ## Overview
 

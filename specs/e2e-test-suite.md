@@ -1,6 +1,6 @@
 # End-to-End Test Suite
 
-Status: Proposed
+Status: Implemented
 
 ## Overview
 

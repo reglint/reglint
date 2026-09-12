@@ -1,6 +1,6 @@
 # Configuration
 
-Status: Partially Implemented
+Status: Implemented
 
 ## Overview
 
@@ -32,6 +32,8 @@ RuleSet
   - `concurrency` (int, optional): Worker count for scanning.
   - `baseline` (string, optional): Default baseline JSON path used by `analyze` when `--baseline` is not set.
   - `consoleColorsEnabled` (bool, optional): Enable ANSI colors in `console` formatter output.
+  - `ignoreFilesEnabled` (bool, optional): Enable ignore file processing. Runtime behavior is defined in `specs/ignore-files.md`.
+  - `ignoreFiles` (list of string, optional): Ordered ignore file names to evaluate. Runtime behavior is defined in `specs/ignore-files.md`.
   - `git` (GitSettings, optional): Optional Git integration settings for scoped scans.
 
 GitSettings
@@ -55,6 +57,10 @@ failOn: "error"
 concurrency: 8
 baseline: "testdata/baseline.json"
 consoleColorsEnabled: true
+ignoreFilesEnabled: true
+ignoreFiles:
+  - ".ignore"
+  - ".reglintignore"
 git:
   mode: "diff"
   diff: "HEAD~1..HEAD"
@@ -82,6 +88,8 @@ rules:
 - `concurrency`: `GOMAXPROCS` if missing.
 - `baseline`: unset (baseline disabled unless CLI flag sets it) if missing.
 - `consoleColorsEnabled`: `true` if missing.
+- `ignoreFilesEnabled`: `true` if missing.
+- `ignoreFiles`: `['.ignore', '.reglintignore']` if missing.
 - `git.mode`: `off` if missing.
 - `git.diff`: unset if missing.
 - `git.addedLinesOnly`: `false` if missing.
@@ -95,6 +103,8 @@ rules:
 - `concurrency` must be a positive integer when set.
 - `baseline` must be a non-empty string when set.
 - `consoleColorsEnabled` must be a boolean when set.
+- `ignoreFilesEnabled` must be a boolean when set.
+- `ignoreFiles` values must be non-empty file names without path separators and without duplicates when set.
 - `git.mode` must be one of `off|staged|diff` when set.
 - `git.diff` must be a non-empty string when set.
 - `git.diff` is valid only when `git.mode=diff`.

@@ -1,6 +1,6 @@
 # Analyze Command
 
-Status: Partially Implemented
+Status: Implemented
 
 ## Overview
 
@@ -97,6 +97,7 @@ CLIConfig
   - `gitDiffTarget` (string, optional)
   - `gitAddedLinesOnly` (bool, required)
   - `gitignoreEnabled` (bool, required)
+  - `noIgnoreFiles` (bool, required): disable all ignore file processing for this run
 
 Reference struct (Go):
 
@@ -119,6 +120,7 @@ type CLIConfig struct {
     GitDiffTarget       string
     GitAddedLinesOnly   bool
     GitignoreEnabled    bool
+    NoIgnoreFiles      bool
 }
 ```
 
@@ -208,6 +210,7 @@ reglint analyse [flags] [path ...]
 | `--git-diff`             | string | no       | none                 | Diff target/range for `--git-mode=diff`.      |
 | `--git-added-lines-only` | bool   | no       | `false`              | Restrict matches to added lines in Git mode.  |
 | `--no-gitignore`         | bool   | no       | `false`              | Disable `.gitignore` filtering for this run.  |
+| `--no-ignore-files`      | bool   | no       | `false`              | Disable ignore file loading and matching.     |
 
 ### Precedence
 
@@ -224,6 +227,7 @@ reglint analyse [flags] [path ...]
 - If `--git-diff` is provided, effective Git mode is forced to `diff`.
 - If `--git-added-lines-only` is set, it overrides RuleSet `git.addedLinesOnly`.
 - If `--no-gitignore` is set, `.gitignore` filtering is disabled for this run.
+- If `--no-ignore-files` is set, all ignore file processing is disabled for this run (overrides `--no-gitignore`).
 - If `--baseline` is provided, baseline filtering is applied before formatter rendering.
 - If `--baseline` is provided, `--fail-on` is evaluated against regression matches only.
 - If `--write-baseline` is set, suppression is disabled and baseline is generated from full (unsuppressed) matches.

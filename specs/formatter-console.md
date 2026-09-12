@@ -1,6 +1,6 @@
 # Console Formatter
 
-Status: Partially Implemented
+Status: Implemented
 
 ## Overview
 

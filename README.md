@@ -59,6 +59,8 @@ Top-level fields:
 - `ignoreFilesEnabled`: enable or disable ignore file processing.
 - `ignoreFiles`: custom ignore file list.
 
+Binary files and files larger than `--max-file-size` (default 5 MB) are skipped; the console summary line and the `stats` section of the JSON output report skipped file counts.
+
 Minimal example:
 
 ```yaml
