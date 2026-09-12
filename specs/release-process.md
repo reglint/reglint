@@ -96,7 +96,7 @@ Every tag-push release updates the `iyaki/homebrew-tap` formula via GoReleaser, 
 
 ### GitHub Action
 
-`action.yml` at the repository root is a composite action (`iyaki/reglint@action-v*`) that installs the release binary through `install.sh` and runs `reglint analyze` with `config`, `paths`, and `fail-on` inputs; the scan's exit code fails the step. Action versions use the `action-v*` tag namespace so they never trigger the `v*` release workflow. `.github/workflows/action-smoke.yml` exercises the action on clean and violating trees on every change to `action.yml` or `install.sh`.
+The GitHub Action lives in the separate `iyaki/reglint-action` repository and is published to the GitHub Marketplace with semver releases (`v1.x`), versioned independently of RegLint. The composite action resolves the requested tool release, fetches `install.sh` from that exact tag on this repository, installs the checksum-verified binary, and runs `reglint analyze` with `tool-version`, `config`, `paths`, and `fail-on` inputs; the scan's exit code fails the step. `.github/workflows/action-smoke.yml` here exercises the published action on clean and violating trees.
 
 ## Verifications
 
