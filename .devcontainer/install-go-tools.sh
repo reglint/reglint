@@ -15,3 +15,4 @@ go install golang.org/x/vuln/cmd/govulncheck@latest
 go install github.com/securego/gosec/v2/cmd/gosec@latest
 go install github.com/fe3dback/go-arch-lint@latest
 go install github.com/go-gremlins/gremlins/cmd/gremlins@v0.6.0
+go install github.com/goreleaser/goreleaser/v2@v2.15.1
