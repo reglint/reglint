@@ -43,7 +43,7 @@ jobs:
         with:
           go-version: "~1.25.8"
       - name: install go-arch-lint
-        run: go install github.com/fe3dback/go-arch-lint@latest
+        run: go install github.com/fe3dback/go-arch-lint@v1.19.0
       - name: arch
         if: ${{ hashFiles('**/*.go') != '' }}
         run: make arch
