@@ -59,6 +59,23 @@ reglint analyze --config reglint-rules.yaml
 
 Use `reglint --help` or `reglint analyze --help` for the full command reference.
 
+## Use in GitHub Actions
+
+```yaml
+name: scan
+on: [push]
+jobs:
+  reglint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: iyaki/reglint@action-v1
+        with:
+          fail-on: error
+```
+
+Action tags use the `action-v*` namespace (independent of RegLint release tags). Pin a version with `version: v0.1.0`; defaults to the latest release.
+
 ## CLI Overview
 
 ```bash
