@@ -537,6 +537,8 @@ func (e errorFormatter) Write(scan.Result, io.Writer) error {
 }
 
 func TestRunAnalyzeShortFlags(t *testing.T) {
+	t.Setenv("NO_COLOR", "")
+
 	cwdMutex.Lock()
 	defer cwdMutex.Unlock()
 
