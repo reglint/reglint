@@ -53,7 +53,7 @@ Pre-commit hooks run automatically on every commit that touches `*.go`:
 
 Open a GitHub issue and include:
 
-- The RegLint version and the exact command you ran
+- The output of `reglint version` and the exact command you ran
 - The rule configuration involved
 - The command output
 
