@@ -79,12 +79,24 @@ GoReleaser is pinned to the same version in the workflow and `.devcontainer/inst
 
 Each release also ships a `checksums.txt` with SHA-256 sums for all archives.
 
+### Install script
+
+`install.sh` at the repository root is a POSIX `sh` installer for machines without a package manager:
+
+- Detects OS (`linux`/`darwin`) and architecture (`amd64`/`arm64`).
+- Resolves the version from `REGLINT_VERSION`, defaulting to the latest release via the `releases/latest` redirect (no API call).
+- Downloads the release archive plus `checksums.txt` and verifies the SHA-256 sum before extracting.
+- Installs to `REGLINT_INSTALL_DIR`, default `$HOME/.local/bin`, without root.
+
+The `release` workflow smoke-tests it on every tag push: it installs from the tag's own `install.sh` and asserts `reglint version` matches the tag.
+
 ## Verifications
 
 - Pushing a `vX.Y.Z` tag produces a published (non-draft) GitHub Release with 6 archives plus `checksums.txt`.
 - A downloaded linux/amd64 binary reports `reglint version X.Y.Z`.
 - `go install github.com/iyaki/reglint/cmd/reglint@latest` resolves the newest tag instead of a pseudo-version.
 - `workflow_dispatch` runs complete green without creating a release.
+- The installer smoke step passes on tag pushes: `install.sh` from the tag installs the binary and `reglint version` matches the tag.
 
 ## Appendices
 
