@@ -23,6 +23,7 @@ func run(args []string, out io.Writer) int {
 	handlers := map[string]cli.Handler{
 		"analyze": cli.HandleAnalyze,
 		"init":    cli.HandleInit,
+		"version": cli.HandleVersion,
 	}
 
 	return cli.Run(args, handlers, out)

@@ -24,7 +24,7 @@ Status: Implemented
 ### Scope
 
 - Root help output for `reglint`.
-- Subcommand help output for `analyze` (alias `analyse`) and `init`.
+- Subcommand help output for `analyze` (alias `analyse`), `init`, and `version`.
 - Argument precedence, short-circuit behavior, and exit codes.
 
 ## Architecture
@@ -64,7 +64,7 @@ HelpTopic
 
 - Definition: A structured description of a help topic for a CLI command.
 - Fields:
-  - `name` (string, required): `root|analyze|init`.
+  - `name` (string, required): `root|analyze|init|version`.
   - `usage` (list of string, required): usage lines to print.
   - `aliases` (list of string, optional): command aliases.
   - `flags` (list of HelpFlag, required).
@@ -117,7 +117,7 @@ type HelpFlag struct {
 
 ### Command help (happy path)
 
-1. If the first argument is `analyze`, `analyse`, or `init`, inspect remaining args for `-h` or `--help`.
+1. If the first argument is `analyze`, `analyse`, `init`, or `version`, inspect remaining args for `-h` or `--help`.
 2. If present, select the matching help topic.
 3. Render command help output.
 4. Exit with code `0`.
@@ -152,6 +152,7 @@ reglint -h
 reglint analyze --help
 reglint analyse -h
 reglint init --help
+reglint version --help
 ```
 
 ### Help flag
@@ -166,7 +167,7 @@ Root help output must include, in order:
 
 1. `Usage:` line.
 2. Usage line `reglint <command> [flags]`.
-3. `Commands:` section with `analyze (alias: analyse)` and `init`.
+3. `Commands:` section with `analyze (alias: analyse)`, `init`, and `version`.
 4. `Flags:` section containing `-h, --help`.
 
 Command help output must include, in order:
@@ -207,6 +208,7 @@ Formatting rules:
 - `reglint analyze --help` exits `0` and lists baseline generation `--write-baseline` flag.
 - `reglint analyse -h` exits `0` and prints the analyze usage lines.
 - `reglint init --help` exits `0` and lists `--out` and `--force`.
+- `reglint version --help` exits `0` and prints the version usage line.
 - `reglint bogus --help` exits `1` and prints `Unknown command: bogus` only.
 
 ## Appendices
@@ -222,6 +224,7 @@ Usage:
 Commands:
   analyze (alias: analyse)
   init
+  version
 
 Flags:
   -h, --help bool (default false)  Print help and exit.
