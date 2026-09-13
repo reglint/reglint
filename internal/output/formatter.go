@@ -3,7 +3,7 @@ package output
 import (
 	"io"
 
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 // Formatter renders a scan result to the provided writer.

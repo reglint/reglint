@@ -3,7 +3,7 @@ package config
 import (
 	"testing"
 
-	"github.com/iyaki/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/rules"
 )
 
 func TestRuleToRulesRulePreservesExplicitValues(t *testing.T) {

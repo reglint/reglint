@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/ignore"
+	"github.com/reglint/reglint/internal/ignore"
 )
 
 func TestMatcherRespectsOrderingAndNegation(t *testing.T) {

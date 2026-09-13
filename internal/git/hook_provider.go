@@ -1,6 +1,6 @@
 package git
 
-import "github.com/iyaki/reglint/internal/hooks"
+import "github.com/reglint/reglint/internal/hooks"
 
 // HookProvider wires Git adapter behaviors into scan hook contracts.
 type HookProvider struct {

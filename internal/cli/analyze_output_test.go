@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/config"
-	"github.com/iyaki/reglint/internal/output"
-	"github.com/iyaki/reglint/internal/rules"
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/config"
+	"github.com/reglint/reglint/internal/output"
+	"github.com/reglint/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 func lockAnalyzeOutput(t *testing.T) {

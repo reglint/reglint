@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 func TestConsoleFormatterNameAndWrite(t *testing.T) {

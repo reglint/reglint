@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/rules"
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 func TestWriteConsoleNoMatches(t *testing.T) {

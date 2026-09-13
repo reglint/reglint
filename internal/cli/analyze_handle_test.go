@@ -12,10 +12,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/baseline"
-	"github.com/iyaki/reglint/internal/git"
-	"github.com/iyaki/reglint/internal/output"
-	"github.com/iyaki/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/baseline"
+	"github.com/reglint/reglint/internal/git"
+	"github.com/reglint/reglint/internal/output"
+	"github.com/reglint/reglint/internal/rules"
 )
 
 var cwdMutex sync.Mutex

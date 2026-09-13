@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/ignore"
+	"github.com/reglint/reglint/internal/ignore"
 )
 
 func TestLoadOrdersRulesByDirectoryAndFile(t *testing.T) {

@@ -3,7 +3,7 @@ package scan
 import (
 	"path/filepath"
 
-	"github.com/iyaki/reglint/internal/ignore"
+	"github.com/reglint/reglint/internal/ignore"
 )
 
 func loadIgnoreRules(request Request) (map[string][]ignore.IgnoreRule, error) {
