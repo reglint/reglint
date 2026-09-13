@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/config"
+	"github.com/reglint/reglint/internal/config"
 )
 
 func TestLoadRuleSetRejectsEmptyRules(t *testing.T) {

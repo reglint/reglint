@@ -1,7 +1,7 @@
 # RegLint
-[![quality](https://github.com/iyaki/reglint/actions/workflows/quality.yml/badge.svg)](https://github.com/iyaki/reglint/actions/workflows/quality.yml)
-[![security](https://github.com/iyaki/reglint/actions/workflows/security.yml/badge.svg)](https://github.com/iyaki/reglint/actions/workflows/security.yml)
-[![e2e-full](https://github.com/iyaki/reglint/actions/workflows/e2e-full.yml/badge.svg)](https://github.com/iyaki/reglint/actions/workflows/e2e-full.yml)
+[![quality](https://github.com/reglint/reglint/actions/workflows/quality.yml/badge.svg)](https://github.com/reglint/reglint/actions/workflows/quality.yml)
+[![security](https://github.com/reglint/reglint/actions/workflows/security.yml/badge.svg)](https://github.com/reglint/reglint/actions/workflows/security.yml)
+[![e2e-full](https://github.com/reglint/reglint/actions/workflows/e2e-full.yml/badge.svg)](https://github.com/reglint/reglint/actions/workflows/e2e-full.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 RegLint is a regex-based linter for source repositories. It scans files using YAML-defined rules and emits `console`, `json`, or `sarif` output for local development and CI pipelines.
@@ -11,15 +11,15 @@ RegLint is a regex-based linter for source repositories. It scans files using YA
 ### Homebrew
 
 ```bash
-brew install iyaki/tap/reglint
+brew install reglint/tap/reglint
 ```
 
-The formula lives in [`iyaki/homebrew-tap`](https://github.com/iyaki/homebrew-tap) and is updated automatically on every release.
+The formula lives in [`reglint/homebrew-tap`](https://github.com/reglint/homebrew-tap) and is updated automatically on every release.
 
 ### One-line install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/iyaki/reglint/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/reglint/reglint/main/install.sh | sh
 ```
 
 Detects your platform, verifies the SHA-256 checksum, and installs to `~/.local/bin` (override with `REGLINT_INSTALL_DIR` or pin with `REGLINT_VERSION=v0.1.0`).
@@ -29,12 +29,12 @@ Detects your platform, verifies the SHA-256 checksum, and installs to `~/.local/
 Requires Go 1.25 or newer:
 
 ```bash
-go install github.com/iyaki/reglint/cmd/reglint@latest
+go install github.com/reglint/reglint/cmd/reglint@latest
 ```
 
 ### Prebuilt binaries
 
-Download an archive and `checksums.txt` from [GitHub Releases](https://github.com/iyaki/reglint/releases), verify the checksum, then extract and run the binary:
+Download an archive and `checksums.txt` from [GitHub Releases](https://github.com/reglint/reglint/releases), verify the checksum, then extract and run the binary:
 
 ```bash
 sha256sum -c checksums.txt --ignore-missing
@@ -44,7 +44,7 @@ tar -xzf reglint_<version>_linux_amd64.tar.gz
 Or build from source:
 
 ```bash
-git clone https://github.com/iyaki/reglint
+git clone https://github.com/reglint/reglint
 cd reglint
 make build
 ./bin/reglint --help
@@ -71,12 +71,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: iyaki/reglint-action@v1
+      - uses: reglint/reglint-action@v1
         with:
           fail-on: error
 ```
 
-The action lives in [iyaki/reglint-action](https://github.com/iyaki/reglint-action) and is versioned independently of RegLint releases. It installs the checksum-verified binary and fails the step on the `fail-on` threshold; pin the tool with `tool-version: v0.1.0` (defaults to the latest release).
+The action lives in [reglint/reglint-action](https://github.com/reglint/reglint-action) and is versioned independently of RegLint releases. It installs the checksum-verified binary and fails the step on the `fail-on` threshold; pin the tool with `tool-version: v0.1.0` (defaults to the latest release).
 
 ## CLI Overview
 

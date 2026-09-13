@@ -1,7 +1,7 @@
 // Package baseline loads and validates baseline JSON documents.
 package baseline
 
-import "github.com/iyaki/reglint/internal/scan"
+import "github.com/reglint/reglint/internal/scan"
 
 // Entry stores a count for one (filePath, message) key.
 type Entry struct {

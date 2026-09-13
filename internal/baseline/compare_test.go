@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 func TestCompareSuppressesEqualCounts(t *testing.T) {

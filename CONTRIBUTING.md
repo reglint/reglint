@@ -53,7 +53,7 @@ Pre-commit hooks run automatically on every commit that touches `*.go`:
 
 Releases are automated: a changelog PR, a `vX.Y.Z` tag on `main`, and GoReleaser publishing binaries, checksums, and the Homebrew formula. The full procedure lives in [`specs/release-process.md`](specs/release-process.md).
 
-Maintainers should be aware of the supporting repositories — [`iyaki/homebrew-tap`](https://github.com/iyaki/homebrew-tap) (Homebrew formula, updated by every release) and [`iyaki/reglint-action`](https://github.com/iyaki/reglint-action) (GitHub Action, versioned independently) — and of the `TAP_GITHUB_TOKEN` secret the release workflow needs to update the tap.
+Maintainers should be aware of the supporting repositories — [`reglint/homebrew-tap`](https://github.com/reglint/homebrew-tap) (Homebrew formula, updated by every release) and [`reglint/reglint-action`](https://github.com/reglint/reglint-action) (GitHub Action, versioned independently) — and of the `TAP_GITHUB_TOKEN` secret the release workflow needs to update the tap.
 
 ## Reporting Issues
 

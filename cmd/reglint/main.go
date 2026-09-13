@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/iyaki/reglint/internal/cli"
+	"github.com/reglint/reglint/internal/cli"
 )
 
 var (

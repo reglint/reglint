@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/hooks"
+	"github.com/reglint/reglint/internal/hooks"
 )
 
 type stubProvider struct {

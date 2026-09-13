@@ -1,4 +1,4 @@
-module github.com/iyaki/reglint
+module github.com/reglint/reglint
 
 go 1.25
 

@@ -22,7 +22,7 @@ jobs:
       - name: Detect first release
         id: rel
         run: |
-          code=$(curl -sS -o /dev/null -w '%{http_code}' https://github.com/iyaki/reglint/releases/latest)
+          code=$(curl -sS -o /dev/null -w '%{http_code}' https://github.com/reglint/reglint/releases/latest)
           echo "exists=$( [ "$code" = 200 ] && echo true || echo false )" >> "$GITHUB_OUTPUT"
 
       - name: Write rules config
@@ -42,7 +42,7 @@ jobs:
 
       - name: Scan clean tree (expected to pass)
         if: steps.rel.outputs.exists == 'true'
-        uses: iyaki/reglint-action@v1
+        uses: reglint/reglint-action@v1
         with:
           fail-on: error
 
@@ -54,7 +54,7 @@ jobs:
         if: steps.rel.outputs.exists == 'true'
         id: dirty
         continue-on-error: true
-        uses: iyaki/reglint-action@v1
+        uses: reglint/reglint-action@v1
         with:
           fail-on: error
 

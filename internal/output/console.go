@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 // Console color source markers used for precedence reporting.

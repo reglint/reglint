@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/rules"
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 func TestGoldenConsoleOutput(t *testing.T) {
