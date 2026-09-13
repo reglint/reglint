@@ -14,6 +14,8 @@ RegLint is a regex-based linter for source repositories. It scans files using YA
 brew install iyaki/tap/reglint
 ```
 
+The formula lives in [`iyaki/homebrew-tap`](https://github.com/iyaki/homebrew-tap) and is updated automatically on every release.
+
 ### One-line install
 
 ```bash
@@ -242,7 +244,7 @@ make quality
 
 ## Documentation
 
-Technical specifications and design docs live in [`specs/`](specs/README.md): core architecture, data model, configuration, regex rules, ignore files, git integration, CLI contracts, and formatter output contracts.
+Technical specifications and design docs live in [`specs/`](specs/README.md): core architecture, data model, configuration, regex rules, ignore files, git integration, CLI contracts, formatter output contracts, and the release process.
 
 ## CI Recipe (GitHub Actions)
 
