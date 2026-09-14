@@ -32,6 +32,20 @@ archives:
 checksum:
   name_template: checksums.txt
 
+brews:
+  - repository:
+      owner: iyaki
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/iyaki/reglint"
+    description: "Configurable regex scanner with SARIF output and CI-friendly exit codes."
+    license: "MIT"
+    install: |
+      bin.install "reglint"
+    test: |
+      system "#{bin}/reglint version"
+
 changelog:
   use: git
   sort: asc

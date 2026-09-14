@@ -20,3 +20,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Quality infrastructure: coverage gate (90%), race and flaky detection, mutation testing with gremlins, `golangci-lint` / `govulncheck` / `gosec` / `go-arch-lint`, and a compiled-binary end-to-end suite.
 - `version` command reporting the build-time version (ldflags-injected, `dev` by default).
 - Tag-triggered GoReleaser release pipeline producing cross-platform binaries and checksums.
+- One-line `curl | sh` installer (`install.sh`) with SHA-256 checksum verification, installing to `~/.local/bin`.
+- Homebrew formula published to `iyaki/homebrew-tap` on every release (`brew install iyaki/tap/reglint`).
