@@ -117,6 +117,7 @@ reglint <command> [flags]
 Commands:
   analyze (alias: analyse)
   init
+  version
 ```
 
 ### Flags
