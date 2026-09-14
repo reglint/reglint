@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iyaki/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/rules"
 )
 
 func TestCollectFilesFiltersByIncludeExclude(t *testing.T) {

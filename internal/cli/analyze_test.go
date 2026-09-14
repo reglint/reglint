@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/cli"
+	"github.com/reglint/reglint/internal/cli"
 )
 
 func TestParseAnalyzeDefaults(t *testing.T) {

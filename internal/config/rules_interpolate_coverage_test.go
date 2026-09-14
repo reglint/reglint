@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/iyaki/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/rules"
 )
 
 func TestInterpolateMessageFromConfigPackageCoverage(t *testing.T) {

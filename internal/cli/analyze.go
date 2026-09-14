@@ -10,13 +10,13 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/iyaki/reglint/internal/baseline"
-	"github.com/iyaki/reglint/internal/config"
-	"github.com/iyaki/reglint/internal/git"
-	"github.com/iyaki/reglint/internal/hooks"
-	"github.com/iyaki/reglint/internal/output"
-	"github.com/iyaki/reglint/internal/rules"
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/baseline"
+	"github.com/reglint/reglint/internal/config"
+	"github.com/reglint/reglint/internal/git"
+	"github.com/reglint/reglint/internal/hooks"
+	"github.com/reglint/reglint/internal/output"
+	"github.com/reglint/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 const (

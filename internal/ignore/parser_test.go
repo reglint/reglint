@@ -3,7 +3,7 @@ package ignore_test
 import (
 	"testing"
 
-	"github.com/iyaki/reglint/internal/ignore"
+	"github.com/reglint/reglint/internal/ignore"
 )
 
 func TestParseIgnoresCommentsAndHandlesEscapes(t *testing.T) {

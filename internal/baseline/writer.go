@@ -6,7 +6,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 const baselineFileMode = 0o600

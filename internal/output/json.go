@@ -5,7 +5,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 type jsonResult struct {

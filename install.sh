@@ -3,7 +3,7 @@
 # verifies its SHA-256 checksum, and installs the binary.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/iyaki/reglint/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/reglint/reglint/main/install.sh | sh
 #
 # Environment:
 #   REGLINT_VERSION      Version to install (e.g. 0.1.0 or v0.1.0). Default: latest release.
@@ -11,7 +11,7 @@
 
 set -eu
 
-REPO="iyaki/reglint"
+REPO="reglint/reglint"
 BIN_NAME="reglint"
 
 log() {

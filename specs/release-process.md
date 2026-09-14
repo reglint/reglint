@@ -49,7 +49,7 @@ Status: Implemented
 5. Verify the assets and module resolution:
 
    ```
-   go install github.com/iyaki/reglint/cmd/reglint@vX.Y.Z
+   go install github.com/reglint/reglint/cmd/reglint@vX.Y.Z
    ```
 
 ## Automation
@@ -58,9 +58,9 @@ Status: Implemented
 
 | Repository             | Contents                                        | Updates                                                              |
 | ---------------------- | ----------------------------------------------- | -------------------------------------------------------------------- |
-| `iyaki/reglint` (this) | CLI source, `install.sh`, release workflow       | Per feature work                                                     |
-| `iyaki/homebrew-tap`   | Homebrew formula (`Formula/reglint.rb`)          | Automatically by each tag-push release (requires `TAP_GITHUB_TOKEN`) |
-| `iyaki/reglint-action` | Composite GitHub Action, Marketplace listing     | Independently, on action changes                                     |
+| `reglint/reglint` (this) | CLI source, `install.sh`, release workflow       | Per feature work                                                     |
+| `reglint/homebrew-tap`   | Homebrew formula (`Formula/reglint.rb`)          | Automatically by each tag-push release (requires `TAP_GITHUB_TOKEN`) |
+| `reglint/reglint-action` | Composite GitHub Action, Marketplace listing     | Independently, on action changes                                     |
 
 ### Release workflow
 
@@ -74,7 +74,7 @@ GoReleaser is pinned to the same version in the workflow and `.devcontainer/inst
 ### Version injection
 
 - `internal/cli.version` defaults to `dev` for local builds.
-- GoReleaser injects the release version with `-ldflags "-X github.com/iyaki/reglint/internal/cli.version={{ .Version }}"`.
+- GoReleaser injects the release version with `-ldflags "-X github.com/reglint/reglint/internal/cli.version={{ .Version }}"`.
 - `reglint version` prints `reglint version <value>`.
 
 ### Artifacts
@@ -100,17 +100,17 @@ The `release` workflow smoke-tests it on every tag push: it installs from the ta
 
 ### Homebrew tap
 
-Every tag-push release updates the `iyaki/homebrew-tap` formula via GoReleaser, so `brew install iyaki/tap/reglint` tracks the newest release. Pushing to the tap repository requires the `TAP_GITHUB_TOKEN` secret (a token with write access to `iyaki/homebrew-tap`) because the workflow `GITHUB_TOKEN` is scoped to this repository only. Note: GoReleaser deprecates `brews:` in favor of `homebrew_casks:`; `brews:` remains functional at the pinned GoReleaser version — revisit on the next GoReleaser upgrade.
+Every tag-push release updates the `reglint/homebrew-tap` formula via GoReleaser, so `brew install reglint/tap/reglint` tracks the newest release. Pushing to the tap repository requires the `TAP_GITHUB_TOKEN` secret (a token with write access to `reglint/homebrew-tap`) because the workflow `GITHUB_TOKEN` is scoped to this repository only. Note: GoReleaser deprecates `brews:` in favor of `homebrew_casks:`; `brews:` remains functional at the pinned GoReleaser version — revisit on the next GoReleaser upgrade.
 
 ### GitHub Action
 
-The GitHub Action lives in the separate `iyaki/reglint-action` repository and is published to the GitHub Marketplace with semver releases (`v1.x`), versioned independently of RegLint. The composite action resolves the requested tool release, fetches `install.sh` from that exact tag on this repository, installs the checksum-verified binary, and runs `reglint analyze` with `tool-version`, `config`, `paths`, and `fail-on` inputs; the scan's exit code fails the step. `.github/workflows/action-smoke.yml` here exercises the published action on clean and violating trees.
+The GitHub Action lives in the separate `reglint/reglint-action` repository and is published to the GitHub Marketplace with semver releases (`v1.x`), versioned independently of RegLint. The composite action resolves the requested tool release, fetches `install.sh` from that exact tag on this repository, installs the checksum-verified binary, and runs `reglint analyze` with `tool-version`, `config`, `paths`, and `fail-on` inputs; the scan's exit code fails the step. `.github/workflows/action-smoke.yml` here exercises the published action on clean and violating trees.
 
 #### Releasing the action
 
 Action versions are independent of RegLint versions:
 
-1. Change `iyaki/reglint-action` via PR and merge to its `main`.
+1. Change `reglint/reglint-action` via PR and merge to its `main`.
 2. Tag `vX.Y.Z`, push the tag, and create the release; move the `vX` major tag to the new release.
 3. Tick "Publish to GitHub Marketplace" on the release edit page.
 
@@ -118,7 +118,7 @@ Action versions are independent of RegLint versions:
 
 - Pushing a `vX.Y.Z` tag produces a published (non-draft) GitHub Release with 6 archives plus `checksums.txt`.
 - A downloaded linux/amd64 binary reports `reglint version X.Y.Z`.
-- `go install github.com/iyaki/reglint/cmd/reglint@latest` resolves the newest tag instead of a pseudo-version.
+- `go install github.com/reglint/reglint/cmd/reglint@latest` resolves the newest tag instead of a pseudo-version.
 - `workflow_dispatch` runs complete green without creating a release.
 - The installer smoke step passes on tag pushes: `install.sh` from the tag installs the binary and `reglint version` matches the tag.
 

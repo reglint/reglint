@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
-	"github.com/iyaki/reglint/internal/ignore"
-	"github.com/iyaki/reglint/internal/rules"
+	"github.com/reglint/reglint/internal/ignore"
+	"github.com/reglint/reglint/internal/rules"
 )
 
 var readFile = os.ReadFile

@@ -4,7 +4,7 @@ import (
 	"cmp"
 	"sort"
 
-	"github.com/iyaki/reglint/internal/scan"
+	"github.com/reglint/reglint/internal/scan"
 )
 
 type baselineKey struct {

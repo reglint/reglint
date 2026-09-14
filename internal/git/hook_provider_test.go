@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/iyaki/reglint/internal/git"
-	"github.com/iyaki/reglint/internal/hooks"
+	"github.com/reglint/reglint/internal/git"
+	"github.com/reglint/reglint/internal/hooks"
 )
 
 func TestGitHookProviderModeOffIsNoOp(t *testing.T) {
