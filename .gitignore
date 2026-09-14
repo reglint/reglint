@@ -7,3 +7,4 @@ gremlins-output.json
 *.tmp
 /oom
 /bin
+/dist

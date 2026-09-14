@@ -14,6 +14,15 @@ Requires Go 1.25 or newer:
 go install github.com/iyaki/reglint/cmd/reglint@latest
 ```
 
+### Prebuilt binaries
+
+Download an archive and `checksums.txt` from [GitHub Releases](https://github.com/iyaki/reglint/releases), verify the checksum, then extract and run the binary:
+
+```bash
+sha256sum -c checksums.txt --ignore-missing
+tar -xzf reglint_<version>_linux_amd64.tar.gz
+```
+
 Or build from source:
 
 ```bash
