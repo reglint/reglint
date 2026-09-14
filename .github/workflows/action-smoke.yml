@@ -1,0 +1,65 @@
+name: action-smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/action-smoke.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/action-smoke.yml"
+
+jobs:
+  smoke:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Detect first release
+        id: rel
+        run: |
+          code=$(curl -sS -o /dev/null -w '%{http_code}' https://github.com/iyaki/reglint/releases/latest)
+          echo "exists=$( [ "$code" = 200 ] && echo true || echo false )" >> "$GITHUB_OUTPUT"
+
+      - name: Write rules config
+        if: steps.rel.outputs.exists == 'true'
+        run: |
+          cat > reglint-rules.yaml <<'EOF'
+          include:
+            - "**/*"
+          exclude:
+            - "**/.git/**"
+          failOn: "error"
+          rules:
+            - message: "Avoid hardcoded token: $1"
+              regex: "token\\s*[:=]\\s*([A-Za-z0-9_-]+)"
+              severity: "error"
+          EOF
+
+      - name: Scan clean tree (expected to pass)
+        if: steps.rel.outputs.exists == 'true'
+        uses: iyaki/reglint-action@v1
+        with:
+          fail-on: error
+
+      - name: Write violating file
+        if: steps.rel.outputs.exists == 'true'
+        run: echo 'token = abc123' > leak.txt
+
+      - name: Scan dirty tree (expected to fail)
+        if: steps.rel.outputs.exists == 'true'
+        id: dirty
+        continue-on-error: true
+        uses: iyaki/reglint-action@v1
+        with:
+          fail-on: error
+
+      - name: Assert dirty scan failed
+        if: steps.rel.outputs.exists == 'true' && steps.dirty.outcome != 'failure'
+        run: |
+          echo "expected the dirty scan step to fail"
+          exit 1

@@ -49,6 +49,12 @@ Pre-commit hooks run automatically on every commit that touches `*.go`:
 | `make analyze-example` | Analyze test fixtures with the example config |
 | `make test-e2e-smoke` / `make test-e2e` | Compiled-binary e2e smoke / full matrix |
 
+## Releasing
+
+Releases are automated: a changelog PR, a `vX.Y.Z` tag on `main`, and GoReleaser publishing binaries, checksums, and the Homebrew formula. The full procedure lives in [`specs/release-process.md`](specs/release-process.md).
+
+Maintainers should be aware of the supporting repositories — [`iyaki/homebrew-tap`](https://github.com/iyaki/homebrew-tap) (Homebrew formula, updated by every release) and [`iyaki/reglint-action`](https://github.com/iyaki/reglint-action) (GitHub Action, versioned independently) — and of the `TAP_GITHUB_TOKEN` secret the release workflow needs to update the tap.
+
 ## Reporting Issues
 
 Open a GitHub issue and include:

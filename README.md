@@ -14,6 +14,8 @@ RegLint is a regex-based linter for source repositories. It scans files using YA
 brew install iyaki/tap/reglint
 ```
 
+The formula lives in [`iyaki/homebrew-tap`](https://github.com/iyaki/homebrew-tap) and is updated automatically on every release.
+
 ### One-line install
 
 ```bash
@@ -58,6 +60,23 @@ reglint analyze --config reglint-rules.yaml
 ```
 
 Use `reglint --help` or `reglint analyze --help` for the full command reference.
+
+## Use in GitHub Actions
+
+```yaml
+name: scan
+on: [push]
+jobs:
+  reglint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: iyaki/reglint-action@v1
+        with:
+          fail-on: error
+```
+
+The action lives in [iyaki/reglint-action](https://github.com/iyaki/reglint-action) and is versioned independently of RegLint releases. It installs the checksum-verified binary and fails the step on the `fail-on` threshold; pin the tool with `tool-version: v0.1.0` (defaults to the latest release).
 
 ## CLI Overview
 
@@ -225,7 +244,7 @@ make quality
 
 ## Documentation
 
-Technical specifications and design docs live in [`specs/`](specs/README.md): core architecture, data model, configuration, regex rules, ignore files, git integration, CLI contracts, and formatter output contracts.
+Technical specifications and design docs live in [`specs/`](specs/README.md): core architecture, data model, configuration, regex rules, ignore files, git integration, CLI contracts, formatter output contracts, and the release process.
 
 ## CI Recipe (GitHub Actions)
 
