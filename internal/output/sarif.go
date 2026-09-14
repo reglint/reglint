@@ -8,9 +8,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/owenrumney/go-sarif/v2/sarif"
 	"github.com/reglint/reglint/internal/rules"
 	"github.com/reglint/reglint/internal/scan"
-	"github.com/owenrumney/go-sarif/v2/sarif"
 )
 
 const (

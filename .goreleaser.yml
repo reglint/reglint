@@ -34,7 +34,7 @@ checksum:
 
 brews:
   - repository:
-      owner: reglint
+      owner: iyaki
       name: homebrew-tap
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     directory: Formula
