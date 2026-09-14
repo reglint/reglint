@@ -1,6 +1,27 @@
 # RegLint
+[![quality](https://github.com/iyaki/reglint/actions/workflows/quality.yml/badge.svg)](https://github.com/iyaki/reglint/actions/workflows/quality.yml)
+[![security](https://github.com/iyaki/reglint/actions/workflows/security.yml/badge.svg)](https://github.com/iyaki/reglint/actions/workflows/security.yml)
+[![e2e-full](https://github.com/iyaki/reglint/actions/workflows/e2e-full.yml/badge.svg)](https://github.com/iyaki/reglint/actions/workflows/e2e-full.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 RegLint is a regex-based linter for source repositories. It scans files using YAML-defined rules and emits `console`, `json`, or `sarif` output for local development and CI pipelines.
+
+## Install
+
+Requires Go 1.25 or newer:
+
+```bash
+go install github.com/iyaki/reglint/cmd/reglint@latest
+```
+
+Or build from source:
+
+```bash
+git clone https://github.com/iyaki/reglint
+cd reglint
+make build
+./bin/reglint --help
+```
 
 ## Quickstart
 
@@ -176,6 +197,10 @@ Run full local quality checks:
 make quality
 ```
 
+## Documentation
+
+Technical specifications and design docs live in [`specs/`](specs/README.md): core architecture, data model, configuration, regex rules, ignore files, git integration, CLI contracts, and formatter output contracts.
+
 ## CI Recipe (GitHub Actions)
 
 Example workflow that runs RegLint on pull requests and uploads SARIF results:
@@ -239,3 +264,15 @@ Notes:
   - This is expected when `--fail-on` threshold is met; tune `failOn` in config or CLI if needed.
 - No findings in staged/diff mode when you expected matches
   - Verify file selection (`--git-mode`, `--git-diff`) and ignore settings (`--no-gitignore`, `--no-ignore-files`).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for devcontainer setup, git hooks, and the spec-first workflow.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
+## License
+
+[MIT](LICENSE)
