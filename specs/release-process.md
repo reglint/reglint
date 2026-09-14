@@ -76,6 +76,7 @@ GoReleaser is pinned to the same version in the workflow and `.devcontainer/inst
 - `internal/cli.version` defaults to `dev` for local builds.
 - GoReleaser injects the release version with `-ldflags "-X github.com/reglint/reglint/internal/cli.version={{ .Version }}"`.
 - `reglint version` prints `reglint version <value>`.
+- When the ldflags injection is absent (plain `go install`), the command falls back to the module version recorded in the build info, and to `dev` when neither is available.
 
 ### Artifacts
 
