@@ -1,6 +1,6 @@
 # Implementation Plan (formatter-github)
 
-**Status:** In progress — Phases 1–3 done; Phase 4 README docs done (`96c2237`), spec enum deltas remain blocked pending user approval; Phase 5 gate runs pending.
+**Status:** Done — Phases 1–4 done (`96c2237` latest code/docs); Phase 5 verification done 2026-09-15; only spec enum deltas remain blocked pending user approval.
 **Last Updated:** 2026-09-15
 **Primary Specs:** `specs/formatter-github.md` (related: `specs/formatter.md`, `specs/formatter-sarif.md`, `specs/cli-analyze.md`, `specs/testing-and-validations.md`)
 
@@ -119,15 +119,14 @@
 ## Phase 5: Final verification
 
 **Goal:** Prove end-to-end behavior and close out.
-**Status:** Not started
+**Status:** Done (2026-09-15)
 **Paths:** repo root
 
 ### 5.1 Verification checklist
 
-- [ ] `make build` + `make run ARGS='analyze --config configs/example.rules.yaml --format github'` — inspect annotation lines.
-- [ ] `make analyze-example` / `make analyze-fail` unchanged exit semantics with `--format github`.
-- [ ] `make quality` (lint, coverage ≥90%, security, arch).
-- [ ] `make mutation` (final stage only, per AGENTS.md).
+- [x] `make build` + built-binary run `./bin/reglint analyze --config testdata/rules/example.yaml --format github testdata/fixtures` — annotation lines inspected (plan named `configs/example.rules.yaml`, which does not exist; actual example config lives at `testdata/rules/example.yaml`).
+- [x] `--fail-on` exit semantics unchanged with `--format github`: `testdata/rules/fail.yaml` run exits 2 (matches non-github behavior).
+- [x] `make quality` (test, lint, test-race, test-flaky, coverage ≥90% gate, test-mutation, security, arch) — all green. Note: `quality` already includes the `test-mutation` target (gremlins, efficacy 78.77%), so a separate `make mutation` run was redundant and skipped.
 
 **Definition of Done**
 
@@ -159,6 +158,10 @@
 - 2026-09-15: `./bin/reglint analyze --config testdata/rules/example.yaml --format github --git-mode diff --git-diff HEAD~1 --git-added-lines-only testdata/fixtures` - exact CI-recipe flag combination runs, exit 0, zero annotations (no matching added lines in that range; git filters apply upstream per spec); bug fixes discovered: none; files touched: none.
 - 2026-09-15: README.md docs committed as `96c2237` (1 file, 48 insertions) - intro formats list, Output Formats `github` bullet + combined-format example, new "CI Recipe: PR Annotations" section; spec enum deltas untouched (blocked per AGENTS.md); bug fixes discovered: none; files touched: `README.md`.
 
+- 2026-09-15: `make build` + `./bin/reglint analyze --config testdata/rules/example.yaml --format github testdata/fixtures` - prints `::error file=sample.txt,line=1,col=1,title=RC0001::Found token token=abc`, exit 0 (plan's `configs/example.rules.yaml` path does not exist; actual example config is `testdata/rules/example.yaml`); bug fixes discovered: none; files touched: none.
+- 2026-09-15: `./bin/reglint analyze --config testdata/rules/fail.yaml --format github testdata/fixtures` - exit 2, confirming `--fail-on` exit semantics unchanged with the github format; bug fixes discovered: none; files touched: none.
+- 2026-09-15: `make quality` - all gates green: `go test ./...` ok, `golangci-lint` 0 issues, `go test -race` ok, flaky run (count=20, shuffle) ok, coverage gate ≥90% passed, gremlins mutation (efficacy 78.77%, mutator coverage 94.07%) ok, `govulncheck` 0 vulnerabilities in code, `gosec` 0 issues, `go-arch-lint` OK; note `quality` already includes the `test-mutation` target, so the separate Phase 5 `make mutation` item is satisfied by this run; bug fixes discovered: none; files touched: none.
+
 ## Summary
 
 | Phase | Status |
@@ -167,9 +170,9 @@
 | Phase 2: Registry and CLI wiring | Done (`e8598e2`) |
 | Phase 3: Tests | Done (`1930576`, `e8598e2`) |
 | Phase 4: Docs and spec-index alignment | README done (`96c2237`); spec deltas blocked on user approval |
-| Phase 5: Final verification | Not started |
+| Phase 5: Final verification | Done (2026-09-15) |
 
-**Remaining effort:** Phase 5 only — `make quality` + `make mutation` gate runs and the Phase 5.1 smoke checks (quality was green at Phase 2 close-out); spec enum deltas stay blocked pending user approval.
+**Remaining effort:** None for implementation — all phases done. Only the spec enum deltas (4.1 second bullet) stay blocked pending user approval.
 
 ## Known Existing Work
 
