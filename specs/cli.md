@@ -13,7 +13,7 @@ Status: Implemented
 
 - Stable, well-documented flags and exit codes.
 - Clear validation errors and deterministic behavior.
-- Support console, JSON, and SARIF output selection.
+- Support console, JSON, SARIF, and GitHub output selection.
 - Support optional baseline suppression for incremental adoption.
 - Support baseline generation/regeneration from current findings.
 

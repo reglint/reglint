@@ -82,7 +82,7 @@ CLIConfig
 - Fields:
   - `configPath` (string, required)
   - `roots` (list of string, required)
-  - `formats` (list of string, required): `console|json|sarif`
+  - `formats` (list of string, required): `console|json|sarif|github`
   - `outJSON` (string, optional)
   - `outSARIF` (string, optional)
   - `include` (list of string, optional)
@@ -152,7 +152,7 @@ type CLIConfig struct {
 ### Validation and errors
 
 - `--config` (`-c`) defaults to `reglint-rules.yaml` in the current directory. If the file is missing or unreadable, print an error and exit with code 1.
-- `--format` (`-f`) must include only `console`, `json`, or `sarif`.
+- `--format` (`-f`) must include only `console`, `json`, `sarif`, or `github`.
 - `--concurrency` must be a positive integer.
 - `--max-file-size` must be a positive integer.
 - `--fail-on` must be one of `error|warning|notice|info` when set.
@@ -196,7 +196,7 @@ reglint analyse [flags] [path ...]
 | Flag                     | Type   | Required | Default              | Purpose                                       |
 | ------------------------ | ------ | -------- | -------------------- | --------------------------------------------- |
 | `--config,-c`            | string | no       | `reglint-rules.yaml` | Path to YAML rules config file.               |
-| `--format,-f`            | string | no       | `console`            | Comma-separated list of `console,json,sarif`. |
+| `--format,-f`            | string | no       | `console`            | Comma-separated list of `console,json,sarif,github`. |
 | `--out-json`             | string | no       | none                 | Output path for JSON results.                 |
 | `--out-sarif`            | string | no       | none                 | Output path for SARIF results.                |
 | `--include`              | string | no       | none                 | Repeatable include glob for all rules.        |
