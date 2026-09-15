@@ -1,6 +1,6 @@
 # Implementation Plan (formatter-github)
 
-**Status:** In progress (22/28 checklist items) — Phases 1–2 formatter core, registry/CLI wiring, and all unit/CLI/process tests landed (`1930576`, `e8598e2`); docs and spec deltas pending.
+**Status:** In progress — Phases 1–3 done; Phase 4 README docs done (`96c2237`), spec enum deltas remain blocked pending user approval; Phase 5 gate runs pending.
 **Last Updated:** 2026-09-15
 **Primary Specs:** `specs/formatter-github.md` (related: `specs/formatter.md`, `specs/formatter-sarif.md`, `specs/cli-analyze.md`, `specs/testing-and-validations.md`)
 
@@ -14,7 +14,7 @@
 | Shared mappings reuse (rule id, path normalization, ordering) | `specs/formatter-github.md`, `specs/formatter-sarif.md` | `internal/output/sarif.go` (`ruleIDForIndex`, `normalizePath`), `internal/output/console.go` (`severityRank`) | Reused as-is | ✅ Implemented (sources exist) |
 | Unit + golden tests | `specs/formatter-github.md`, `specs/testing-and-validations.md` | `internal/output/github_test.go`, `testdata/golden/github.txt` (new) | Golden + targeted cases | ✅ Done (`1930576`, in `github_test.go`; `golden_test.go` untouched) |
 | CLI + process tests | `specs/testing-and-validations.md` | `internal/cli/analyze_output_test.go`, `internal/cli/cli_test.go`, `cmd/reglint/main_test.go` | `--format github` contracts | ✅ Done (`e8598e2`, in `analyze_output_test.go`/`analyze_handle_test.go`/`main_test.go`; `cli_test.go` untouched) |
-| Docs (README, CI example) | `specs/formatter-github.md` | `README.md` | Formats list + PR annotations example | ⬜ Missing |
+| Docs (README, CI example) | `specs/formatter-github.md` | `README.md` | Formats list + PR annotations example | ✅ Done (`96c2237`) |
 | Spec deltas for `github` FormatID | `specs/cli-analyze.md`, `specs/cli.md`, `specs/formatter.md` | spec files only | Formats enum updates | ⬜ Blocked pending user approval (AGENTS.md: update specs only when asked) |
 
 ## Phase 1: Formatter core in `internal/output`
@@ -100,12 +100,12 @@
 ## Phase 4: Docs and spec-index alignment
 
 **Goal:** Users can discover the format; spec references stay coherent.
-**Status:** Not started
+**Status:** Done (README, 2026-09-15) — spec enum deltas blocked pending user approval
 **Paths:** `README.md`, `specs/README.md` (already indexed), `specs/cli-analyze.md`, `specs/cli.md`, `specs/formatter.md`
 
 ### 4.1 Docs checklist
 
-- [ ] README.md:7 formats list; README Output section (~:150-164) add `github` stdout rule (stdout even alongside other formats — no out flag); add PR-annotations CI example near the SARIF workflow example (~:250-298), ideally with `--git-mode=diff --git-added-lines-only` per spec notes.
+- [x] README.md:7 formats list; README Output Formats section adds `github` stdout rule (stdout even alongside other formats — no out flag) and a combined-format example; new "CI Recipe: PR Annotations (GitHub Actions)" section after the SARIF recipe with `--git-mode diff --git-added-lines-only` per spec notes.
 - [ ] Spec deltas (formats enums) in `specs/cli-analyze.md:85,155,199`, `specs/cli.md:16`, `specs/formatter.md:84` — **[ ] pending user approval**: AGENTS.md says update specs only when asked.
 
 **Definition of Done**
@@ -155,6 +155,9 @@
 - 2026-09-15: same targeted runs (GREEN) - 4/4 pass: render github-to-stdout exact annotation line, github+sarif out-file combination, HandleAnalyze end-to-end `--format github` exit 0 with exact stdout, process-level run with ANSI-free exact output; bug fixes discovered: two edit hunks initially swallowed closing `)`/`if err` lines (syntax breaks, restored); files touched: `internal/cli/analyze.go`, `internal/cli/analyze_output_test.go`, `internal/cli/analyze_handle_test.go`, `cmd/reglint/main_test.go`.
 - 2026-09-15: `make test` - all packages ok; `make build` + `./bin/reglint analyze --config testdata/rules/example.yaml --format github testdata/fixtures` - prints `::error file=sample.txt,line=1,col=1,title=RC0001::Found token token=abc`, exit 0; `--format github,sarif --out-sarif` accepted; `--out-github` rejected (`flag provided but not defined`); help.go format description re-checked, no drift; bug fixes discovered: none; files touched: none.
 - 2026-09-15: `make quality` (test, lint, test-race, test-flaky, coverage ≥90% gate, mutation, gosec 0 issues, go-arch-lint OK) - all gates green; committed as `e8598e2` (4 files, 113 insertions); bug fixes discovered: none; files touched: `internal/cli/analyze.go`, `internal/cli/analyze_output_test.go`, `internal/cli/analyze_handle_test.go`, `cmd/reglint/main_test.go`.
+- 2026-09-15: `make build` + `./bin/reglint analyze --config testdata/rules/example.yaml --format github testdata/fixtures` - prints `::error file=sample.txt,line=1,col=1,title=RC0001::Found token token=abc`, exit 0; `analyze --help` confirms every flag used in the CI recipe (`--git-mode`, `--git-diff`, `--git-added-lines-only`); bug fixes discovered: none; files touched: `README.md`.
+- 2026-09-15: `./bin/reglint analyze --config testdata/rules/example.yaml --format github --git-mode diff --git-diff HEAD~1 --git-added-lines-only testdata/fixtures` - exact CI-recipe flag combination runs, exit 0, zero annotations (no matching added lines in that range; git filters apply upstream per spec); bug fixes discovered: none; files touched: none.
+- 2026-09-15: README.md docs committed as `96c2237` (1 file, 48 insertions) - intro formats list, Output Formats `github` bullet + combined-format example, new "CI Recipe: PR Annotations" section; spec enum deltas untouched (blocked per AGENTS.md); bug fixes discovered: none; files touched: `README.md`.
 
 ## Summary
 
@@ -163,10 +166,10 @@
 | Phase 1: Formatter core in `internal/output` | Done (`1930576`) |
 | Phase 2: Registry and CLI wiring | Done (`e8598e2`) |
 | Phase 3: Tests | Done (`1930576`, `e8598e2`) |
-| Phase 4: Docs and spec-index alignment | Not started (spec deltas blocked on user approval) |
+| Phase 4: Docs and spec-index alignment | README done (`96c2237`); spec deltas blocked on user approval |
 | Phase 5: Final verification | Not started |
 
-**Remaining effort:** Phases 1–3 done (`1930576`, `e8598e2`); Phase 4 is small README work with one blocked spec-delta item; Phase 5 is gate runs (quality already green at Phase 2 close-out).
+**Remaining effort:** Phase 5 only — `make quality` + `make mutation` gate runs and the Phase 5.1 smoke checks (quality was green at Phase 2 close-out); spec enum deltas stay blocked pending user approval.
 
 ## Known Existing Work
 
