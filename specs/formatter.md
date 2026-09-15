@@ -81,7 +81,7 @@ FormatterRegistry
 FormatID
 
 - Definition: CLI-visible identifier for a formatter.
-- Values: `console`, `json`, `sarif` (extensible).
+- Values: `console`, `json`, `sarif`, `github` (extensible).
 
 ### Relationships
 
