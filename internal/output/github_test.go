@@ -67,7 +67,7 @@ func TestGitHubSeverityMapping(t *testing.T) {
 		"info":    "::notice ",
 	}
 
-	var matches []scan.Match
+	matches := make([]scan.Match, 0, len(cases))
 	for severity := range cases {
 		matches = append(matches, scan.Match{
 			Message:   "msg " + severity,
@@ -94,7 +94,7 @@ func TestGitHubSeverityMapping(t *testing.T) {
 func TestGitHubCapsDropBeyondTenPerLevel(t *testing.T) {
 	t.Parallel()
 
-	var matches []scan.Match
+	matches := make([]scan.Match, 0, 11*3)
 	for level := range 11 {
 		for _, severity := range []string{"error", "warning", "notice"} {
 			matches = append(matches, scan.Match{
@@ -132,7 +132,7 @@ func TestGitHubCapsDropBeyondTenPerLevel(t *testing.T) {
 func TestGitHubNoSummaryAtExactCap(t *testing.T) {
 	t.Parallel()
 
-	var matches []scan.Match
+	matches := make([]scan.Match, 0, 10*3)
 	for level := range 10 {
 		for _, severity := range []string{"error", "warning", "notice"} {
 			matches = append(matches, scan.Match{
