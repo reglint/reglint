@@ -36,6 +36,7 @@ Design docs and technical specifications
 - [Console Formatter](specs/formatter-console.md)
 - [JSON Formatter](specs/formatter-json.md)
 - [SARIF Formatter](specs/formatter-sarif.md)
+- [GitHub Formatter](specs/formatter-github.md)
 
 ### Integrations
 
