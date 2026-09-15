@@ -136,12 +136,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: reglint/reglint-action@v1
+      - uses: reglint/reglint-action@v1.1.0
         with:
           fail-on: error
 ```
 
-The action lives in [reglint/reglint-action](https://github.com/reglint/reglint-action) and is versioned independently of RegLint releases. It installs the checksum-verified binary and fails the step on the `fail-on` threshold; pin the tool with `tool-version: v0.1.0` (defaults to the latest release).
+The action lives in [reglint/reglint-action](https://github.com/reglint/reglint-action) and is versioned independently of RegLint releases, publishing full `vX.Y.Z` tags only (no moving major tag — pin exact versions). It installs the checksum-verified binary and fails the step on the `fail-on` threshold; pin the tool with `tool-version: v0.1.0` (defaults to the latest release).
 
 ## CLI Overview
 

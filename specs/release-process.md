@@ -105,14 +105,14 @@ Every tag-push release updates the `reglint/homebrew-tap` formula via GoReleaser
 
 ### GitHub Action
 
-The GitHub Action lives in the separate `reglint/reglint-action` repository and is published to the GitHub Marketplace with semver releases (`v1.x`), versioned independently of RegLint. The composite action resolves the requested tool release, fetches `install.sh` from that exact tag on this repository, installs the checksum-verified binary, and runs `reglint analyze` with `tool-version`, `config`, `paths`, and `fail-on` inputs; the scan's exit code fails the step. `.github/workflows/action-smoke.yml` here exercises the published action on clean and violating trees.
+The GitHub Action lives in the separate `reglint/reglint-action` repository and is published to the GitHub Marketplace with full semver releases (`vX.Y.Z` tags only, no moving major tag), versioned independently of RegLint. The composite action resolves the requested tool release, fetches `install.sh` from that exact tag on this repository, installs the checksum-verified binary, and runs `reglint analyze` with `tool-version`, `config`, `paths`, and `fail-on` inputs; the scan's exit code fails the step. `.github/workflows/action-smoke.yml` here exercises the published action on clean and violating trees.
 
 #### Releasing the action
 
 Action versions are independent of RegLint versions:
 
 1. Change `reglint/reglint-action` via PR and merge to its `main`.
-2. Tag `vX.Y.Z`, push the tag, and create the release; move the `vX` major tag to the new release.
+2. Tag `vX.Y.Z`, push the tag, and create the release. Full tags only: there is no moving major tag, so consumers pin exact versions (update version references in the READMEs of both repositories when cutting a new action release).
 3. Tick "Publish to GitHub Marketplace" on the release edit page.
 
 ## Verifications
