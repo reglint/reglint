@@ -1,192 +1,174 @@
-# Implementation Plan (gitignore)
+# Implementation Plan (formatter-github)
 
-**Status:** Implemented (29/29 verified checklist items); core ignore pipeline and Git-mode precedence are in place, `.gitignore` applies by default in `git-mode=off`, `--no-gitignore` disables `.gitignore` in both Git and non-Git modes, RuleSet `git.gitignoreEnabled: false` has explicit regression coverage in both scan modes, `--no-ignore-files` highest-precedence behavior is locked by process-level regressions, non-Git process-boundary `.gitignore` coverage is validated in e2e, and documentation plus verification evidence are aligned.
-**Last Updated:** 2026-03-12
-**Primary Specs:** `specs/ignore-files.md` (related: `specs/git-integration.md`, `specs/cli-analyze.md`, `specs/configuration.md`, `specs/testing-and-validations.md`, `specs/core-architecture.md`, `specs/data-model.md`)
+**Status:** Not started (0/26 checklist items) — spec `specs/formatter-github.md` committed at `30252e9` (Draft); formatter, registry/CLI wiring, tests, and docs all pending.
+**Last Updated:** 2026-09-15
+**Primary Specs:** `specs/formatter-github.md` (related: `specs/formatter.md`, `specs/formatter-sarif.md`, `specs/cli-analyze.md`, `specs/testing-and-validations.md`)
 
 ## Quick Reference
 
-| System / Subsystem                              | Specs                                                         | Modules / Packages                                                                                                      | Artifacts                                                                           | Status         |
-| ----------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | -------------- |
-| RuleSet and defaults for ignore behavior        | `specs/ignore-files.md`, `specs/configuration.md`             | `internal/config/model.go`, `internal/config/loader.go`, `internal/config/rules.go`, `internal/rules/model.go`          | `RuleSet.ignoreFilesEnabled`, `RuleSet.ignoreFiles`, `RuleSet.git.gitignoreEnabled` | ✅ Implemented |
-| CLI controls for ignore and gitignore           | `specs/ignore-files.md`, `specs/cli-analyze.md`               | `internal/cli/analyze.go`, `internal/cli/help.go`                                                                       | `--no-ignore-files`, `--no-gitignore`                                               | ✅ Implemented |
-| Ignore parsing/loading/matching engine          | `specs/ignore-files.md`                                       | `internal/ignore/loader.go`, `internal/ignore/parser.go`, `internal/ignore/matcher.go`, `internal/scan/ignore_rules.go` | Deterministic ordered rule list with source+line metadata                           | ✅ Implemented |
-| Scan-order precedence include/exclude -> ignore | `specs/ignore-files.md`, `specs/git-integration.md`           | `internal/scan/engine.go`                                                                                               | `evaluateFile(...)`, `collectScanEntries(...)` ordering contract                    | ✅ Implemented |
-| Git hook augmentation for `.gitignore`          | `specs/git-integration.md`, `specs/cli-analyze.md`            | `internal/git/hook_provider.go`, `internal/hooks/scan_hooks.go`, `internal/cli/analyze.go`                              | `.gitignore` injected ahead of `.ignore/.reglintignore` for Git-enabled runs        | ✅ Implemented |
-| `.gitignore` default in non-Git mode            | `specs/ignore-files.md` (`e6c8a35`)                           | `internal/cli/analyze.go`, `cmd/reglint/main_test.go`, `internal/cli/scan_request_test.go`                              | Behavior when `--git-mode=off`                                                      | ✅ Implemented |
-| Regression and e2e coverage for precedence      | `specs/testing-and-validations.md`, `specs/e2e-test-suite.md` | `internal/scan/ignore_test.go`, `cmd/reglint/main_test.go`, `cmd/reglint/e2e_harness_*_test.go`                         | `E2E-FULL-007`, `E2E-FULL-014`, and staged-mode precedence tests                    | ✅ Implemented |
+| System / Subsystem | Specs | Modules / Packages | Artifacts | Status |
+| --- | --- | --- | --- | --- |
+| GitHub formatter (workflow commands, caps, escaping) | `specs/formatter-github.md` | `internal/output/github.go` (new) | `WriteGitHub`, `GitHubFormatter{Rules}` | ⬜ Missing |
+| Formatter registry + CLI format resolution | `specs/formatter-github.md`, `specs/formatter.md` | `internal/cli/analyze.go` (`parseFormats`, `defaultOutputRegistry`, `renderFormat`) | `github` accepted by `--format` | ⬜ Missing |
+| Output routing (stdout-only, no `--out-github`) | `specs/formatter-github.md`, `specs/cli-analyze.md` | `internal/cli/analyze.go` (`validateOutputPaths`) | No new flag; multi-format rule unchanged | ✅ Verified no change needed |
+| Shared mappings reuse (rule id, path normalization, ordering) | `specs/formatter-github.md`, `specs/formatter-sarif.md` | `internal/output/sarif.go` (`ruleIDForIndex`, `normalizePath`), `internal/output/console.go` (`severityRank`) | Reused as-is | ✅ Implemented (sources exist) |
+| Unit + golden tests | `specs/formatter-github.md`, `specs/testing-and-validations.md` | `internal/output/github_test.go`, `internal/output/golden_test.go`, `testdata/golden/github.txt` (new) | Golden + targeted cases | ⬜ Missing |
+| CLI + process tests | `specs/testing-and-validations.md` | `internal/cli/analyze_output_test.go`, `internal/cli/cli_test.go`, `cmd/reglint/main_test.go` | `--format github` contracts | ⬜ Missing |
+| Docs (README, CI example) | `specs/formatter-github.md` | `README.md` | Formats list + PR annotations example | ⬜ Missing |
+| Spec deltas for `github` FormatID | `specs/cli-analyze.md`, `specs/cli.md`, `specs/formatter.md` | spec files only | Formats enum updates | ⬜ Blocked pending user approval (AGENTS.md: update specs only when asked) |
 
-## Phase 21: Scope reset and spec delta confirmation
+## Phase 1: Formatter core in `internal/output`
 
-**Goal:** Re-scope planning from stale e2e plan to current `gitignore` scope and confirm latest spec deltas.
-**Status:** Complete
-**Paths:** `specs/README.md`, `specs/ignore-files.md`, `specs/git-integration.md`, `specs/cli-analyze.md`, `specs/configuration.md`, `specs/testing-and-validations.md`, `IMPLEMENTATION_PLAN.md`
-**Reference pattern:** `specs/ignore-files.md`, `specs/git-integration.md`
+**Goal:** Implement the GitHub workflow-command formatter per spec, reusing existing mappings.
+**Status:** Not started
+**Paths:** `internal/output/github.go`, `internal/output/sarif.go`, `internal/output/console.go`
+**Reference pattern:** `internal/output/sarif.go` (`WriteSARIF`/`SARIFFormatter` shape), `internal/output/console.go:228` (`severityRank`)
 
-### 21.1 Spec and history audit
+### 1.1 Implementation checklist (TDD: write failing tests first per AGENTS.md)
 
-- [x] Verified `specs/ignore-files.md` is indexed from `specs/README.md`.
-- [x] Verified latest scope-specific spec commit is `e6c8a35` (`[specs] gitignore support enabled by default`).
-- [x] Verified scope crosses config, CLI, hooks, scan filtering, tests, and docs.
-
-### 21.2 Stale-plan replacement
-
-- [x] Verified previous `IMPLEMENTATION_PLAN.md` tracked `e2e-tests`, not `gitignore`.
-- [x] Replaced plan structure and checklist with gitignore-specific gaps and verified evidence.
-
-**Definition of Done**
-
-- Plan scope matches `gitignore` and references latest related spec commits.
-- Verification log includes exact history and code-search commands used.
-
-**Risks/Dependencies**
-
-- Spec wording changed recently; implementation assumptions must follow `e6c8a35`, not older behavior.
-
-## Phase 22: Confirmed existing implementation coverage
-
-**Goal:** Document what is already implemented to avoid duplicate work.
-**Status:** Complete
-**Paths:** `internal/config/*.go`, `internal/cli/analyze.go`, `internal/cli/help.go`, `internal/ignore/*.go`, `internal/scan/*.go`, `internal/git/*.go`, `internal/hooks/*.go`, `cmd/reglint/*test.go`
-**Reference pattern:** `internal/scan/ignore_test.go`, `cmd/reglint/main_test.go`
-
-### 22.1 Config and CLI surfaces
-
-- [x] Verified config model includes `ignoreFilesEnabled`, `ignoreFiles`, and `git.gitignoreEnabled`.
-- [x] Verified defaults map to ignore enabled + `.ignore/.reglintignore`, and `git.gitignoreEnabled=true`.
-- [x] Verified CLI exposes `--no-ignore-files` and `--no-gitignore` in parse + help output.
-
-### 22.2 Runtime ignore/precedence pipeline
-
-- [x] Verified scan path order is include -> exclude -> ignore -> file-size/binary checks.
-- [x] Verified ignore loader order is deterministic by directory, file list order, then line.
-- [x] Verified Git hook augmentation prepends `.gitignore` before `.ignore/.reglintignore` in Git-enabled runs.
-- [x] Verified conflict priority behavior is achievable via merged order + last-match-wins matcher.
-
-### 22.3 Existing test evidence
-
-- [x] Verified unit coverage for parser/matcher/loader and ignore validation errors.
-- [x] Verified integration coverage for staged-mode precedence (`.reglintignore > .ignore > .gitignore`).
-- [x] Verified e2e coverage for precedence in `E2E-FULL-014`.
-- [x] Verified direct test coverage for `.gitignore` default filtering when `--git-mode=off`.
+- [ ] Add `WriteGitHub(result scan.Result, ruleSet []rules.Rule, out io.Writer) error` and `GitHubFormatter{Rules []rules.Rule}` with `Name() == "github"` (mirror `SARIFFormatter`, sarif.go:88-100).
+- [ ] Escape `%`→`%25`, `\n`→`%0A`, `\r`→`%0D` everywhere; additionally `:`→`%3A`, `,`→`%2C` in property values only.
+- [ ] Reuse `ruleIDForIndex` (sarif.go:108) for `title=RC%04d` and `normalizePath` (sarif.go:102) for `file=`.
+- [ ] Severity map: `error→error`, `warning→warning`, `notice→notice`, `info→notice`.
+- [ ] Emit `::{level} file={file},line={line},col={col},title={title}::{message}` with fixed property order; each line `\n`-terminated.
+- [ ] Escape `%`→`%25`, `\n`→`%0A`, `\r`→%0D` everywhere; additionally `:`→`%3A`, `,`→`%2C` in property values only.
+- [ ] Enforce caps: first 10 rendered lines per level (`error`/`warning`/`notice`) in canonical order.
+- [ ] Emit exactly one `:::notice title=RegLint::{shown} of {total} matches shown; ...` line iff any match was dropped.
+- [ ] Zero matches → zero output lines. No ANSI sequences, no raw `matchText`.
 
 **Definition of Done**
 
-- Existing behavior inventory is linked to concrete files/tests.
-- Completed items are marked only where code evidence exists.
+- `go test ./internal/output` green; all spec Verifications bullets (formatter-github.md:149-159) covered by tests.
+- No new dependencies (stdlib only, spec Dependencies section).
 
 **Risks/Dependencies**
 
-- Permission-based test cases are skipped on Windows in some suites, limiting cross-platform confidence for unreadable-file edges.
+- Sort comparator would become a 4th inline copy (console/json/sarif/github); follow existing per-formatter convention for now, note consolidation candidate (`ponytail:` comment allowed) without broad refactor.
 
-## Phase 23: Align runtime with default `.gitignore` across scan modes
+## Phase 2: Registry and CLI wiring
 
-**Goal:** Close the gap between current implementation and spec intent from `e6c8a35`.
-**Status:** Complete
-**Paths:** `internal/cli/analyze.go`, `internal/git/hook_provider.go`, `internal/hooks/scan_hooks.go`, `internal/scan/ignore_rules.go`, `internal/scan/ignore_test.go`, `cmd/reglint/main_test.go`, `cmd/reglint/e2e_harness_*_test.go`
-**Reference pattern:** `internal/scan/ignore_test.go`, `cmd/reglint/main_test.go:841`, `cmd/reglint/e2e_harness_internal_test.go:664`
+**Goal:** Accept `--format github`, render to stdout, keep exit-code behavior untouched.
+**Status:** Not started
+**Paths:** `internal/cli/analyze.go`, `internal/cli/help.go`
+**Reference pattern:** `internal/cli/analyze.go:757-766` (`renderFormat` switch), `:742-748` (`defaultOutputRegistry`)
 
-### 23.1 Runtime behavior updates
+### 2.1 Wiring checklist
 
-- [x] Ensure `.gitignore` is applied by default when `--git-mode=off` (including non-repo scans).
-- [x] Preserve no-Git dependency in `git-mode=off` while enabling `.gitignore` matching.
-- [x] Ensure `--no-gitignore` disables `.gitignore` in both Git and non-Git modes.
-- [x] Ensure RuleSet `git.gitignoreEnabled: false` disables `.gitignore` in both Git and non-Git modes.
-- [x] Preserve `--no-ignore-files` as highest-precedence global ignore disable.
-
-### 23.2 Regression and contract tests
-
-- [x] Add/extend CLI test coverage for mode-off default `.gitignore` filtering.
-- [x] Add/extend CLI test coverage for mode-off `--no-gitignore` override behavior.
-- [x] Add/extend config-driven test for `git.gitignoreEnabled: false` in mode-off execution.
-- [x] Add/extend e2e scenario(s) to cover non-Git default `.gitignore` behavior at process boundary.
+- [ ] Register `output.GitHubFormatter{Rules: ruleset}` in `defaultOutputRegistry` (analyze.go:742-748).
+- [ ] Register `output.GitHubFormatter{}` in `parseFormats` validation registry (analyze.go:196-200).
+- [ ] Add `case "github":` to `renderFormat` → `formatter.Write(result, out)` (stdout buffer always; no file branch, unlike json/sarif).
+- [ ] Confirm `validateOutputPaths` (analyze.go:273-292) needs no change: `github` has no out-flag requirement; `--format github,sarif --out-sarif x.sarif` and `--format github,json --out-json x.json` validate; `--out-github` remains an unknown-flag error by design (spec Configuration section).
+- [ ] Help text: `--format` description (help.go:134-140) says "Comma-separated list of formats." with no enum — verify no update required; add none unless drift found.
 
 **Definition of Done**
 
-- Targeted commands pass: `go test ./internal/scan ./internal/cli ./internal/git ./internal/hooks`.
-- Process-level contracts pass: `go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOff|TestE2EFull014|TestE2E.*Gitignore'`.
-- If e2e scenario catalog changes, `make test-e2e` passes.
+- `reglint analyze --format github` writes annotations to stdout; `--fail-on` exit codes identical to other formats (spec Workflows/Error cases).
 
 **Risks/Dependencies**
 
-- Current `.gitignore` wiring is coupled to Git hooks; broadening to mode-off may require refactoring to avoid duplicate or inconsistent ignore augmentation.
+- None beyond Phase 1.
 
-## Phase 24: Documentation and verification evidence alignment
+## Phase 3: Tests
 
-**Goal:** Keep user/developer docs and verification logs consistent with final behavior.
-**Status:** Complete
-**Paths:** `README.md`, `internal/cli/help.go`, `IMPLEMENTATION_PLAN.md` (spec files are references unless explicitly requested to edit)
-**Reference pattern:** `README.md:90`, `internal/cli/cli_test.go:177`
+**Goal:** Lock spec contracts at unit, CLI, and process level.
+**Status:** Not started
+**Paths:** `internal/output/github_test.go`, `internal/output/golden_test.go`, `internal/output/ansi_assertions_test.go`, `internal/cli/analyze_output_test.go`, `internal/cli/cli_test.go`, `cmd/reglint/main_test.go`, `testdata/golden/`
+**Reference pattern:** `internal/output/golden_test.go` (`assertGoldenBytes`, `testdata/golden/`), `internal/cli/analyze_output_test.go:52-73` (stdout/multi-format contracts)
 
-### 24.1 Documentation consistency
+### 3.1 Unit/output tests
 
-- [x] Update README wording/examples to reflect that `.gitignore` is default across scan modes.
-- [x] Confirm help text and examples remain consistent for `--no-gitignore` and `--no-ignore-files`.
+- [ ] Golden: `TestGoldenGitHubOutput` with `testdata/golden/github.txt` (extend `golden_test.go`; reuse `goldenSampleResult` or a github-specific fixture).
+- [ ] Escaping: `%`, newline, CR in message and in property values (`:`/`,` percent-encoded only in properties).
+- [ ] Severity map incl. `info→notice`; rule-id mapping from ruleset index.
+- [ ] Caps: 11+ matches per level → exactly 10 rendered; summary line emitted once iff dropped; no summary at exactly 10/10/10.
+- [ ] Zero matches → empty output; ordering matches shared ordering; no ANSI; formatter error propagates as `error`.
 
-### 24.2 Final verification evidence
+### 3.2 CLI + process tests
 
-- [x] Run and record targeted tests for new gitignore behavior and overrides.
-- [x] Run `make test` (and `make quality` if cross-cutting behavior changes) and log outcomes.
+- [ ] `parseFormats` accepts `github`; unknown formats still rejected (extend existing parse tests in `internal/cli/cli_test.go`).
+- [ ] `renderFormat` github-to-stdout and `github,sarif` combination (pattern: `TestWriteSARIFOutputToStdout`, `analyze_output_test.go:62`).
+- [ ] Process-level run asserting stdout annotation lines end-to-end (pattern: `cmd/reglint/main_test.go` SARIF output tests, e.g. `:784`).
 
 **Definition of Done**
 
-- Verification log records exact commands and pass/fail results.
-- Plan status and remaining effort reflect real repository state.
+- Targeted: `go test ./internal/output ./internal/cli`; suite: `make test`; quality gates per AGENTS.md (`make quality` before close; `make mutation` only at final stage).
 
 **Risks/Dependencies**
 
-- README/help drift can leave behavior correct in code but unclear for users and CI contributors.
+- Golden file updates are additive; existing goldens untouched.
+
+## Phase 4: Docs and spec-index alignment
+
+**Goal:** Users can discover the format; spec references stay coherent.
+**Status:** Not started
+**Paths:** `README.md`, `specs/README.md` (already indexed), `specs/cli-analyze.md`, `specs/cli.md`, `specs/formatter.md`
+
+### 4.1 Docs checklist
+
+- [ ] README.md:7 formats list; README Output section (~:150-164) add `github` stdout rule (stdout even alongside other formats — no out flag); add PR-annotations CI example near the SARIF workflow example (~:250-298), ideally with `--git-mode=diff --git-added-lines-only` per spec notes.
+- [ ] Spec deltas (formats enums) in `specs/cli-analyze.md:85,155,199`, `specs/cli.md:16`, `specs/formatter.md:84` — **[ ] pending user approval**: AGENTS.md says update specs only when asked.
+
+**Definition of Done**
+
+- README examples run as printed against the built binary (`make build`).
+
+**Risks/Dependencies**
+
+- Blocked item: spec enum deltas (4.1 second bullet).
+
+## Phase 5: Final verification
+
+**Goal:** Prove end-to-end behavior and close out.
+**Status:** Not started
+**Paths:** repo root
+
+### 5.1 Verification checklist
+
+- [ ] `make build` + `make run ARGS='analyze --config configs/example.rules.yaml --format github'` — inspect annotation lines.
+- [ ] `make analyze-example` / `make analyze-fail` unchanged exit semantics with `--format github`.
+- [ ] `make quality` (lint, coverage ≥90%, security, arch).
+- [ ] `make mutation` (final stage only, per AGENTS.md).
+
+**Definition of Done**
+
+- Verification Log entries recorded below with real command results.
+
+**Risks/Dependencies**
+
+- None.
 
 ## Verification Log
 
-- 2026-03-11: `git log --oneline --decorate -n 30 -- specs/ignore-files.md specs/git-integration.md specs/cli-analyze.md specs/configuration.md specs/testing-and-validations.md specs/README.md` - confirmed latest gitignore-related spec commit is `e6c8a35`; tests run: none (planning mode); bug fixes discovered: none; files touched: listed spec files.
-- 2026-03-11: `git show --name-only --oneline e6c8a35` and `git show --stat --oneline e6c8a35` - verified spec delta limited to `specs/ignore-files.md` and `specs/git-integration.md`; tests run: none; bug fixes discovered: none; files touched: `specs/ignore-files.md`, `specs/git-integration.md`.
-- 2026-03-11: `git show e6c8a35 -- specs/ignore-files.md specs/git-integration.md` - confirmed intent changed to default `.gitignore` behavior across scans; tests run: none; bug fixes discovered: behavior gap identified (not fixed in planning mode); files touched: spec files only.
-- 2026-03-11: `grep "no-gitignore|gitignoreEnabled|ignoreFilesEnabled|ignoreFiles|no-ignore-files|reglintignore|\.gitignore"` across `*.go` - mapped implementation entry points in CLI/config/scan/git/hooks/tests; tests run: none; bug fixes discovered: none; files touched: search-only across `internal/*` and `cmd/reglint/*`.
-- 2026-03-11: code read audit for `internal/cli/analyze.go`, `internal/scan/engine.go`, `internal/scan/ignore_rules.go`, `internal/git/hook_provider.go`, `internal/hooks/scan_hooks.go`, `internal/ignore/{loader,parser,matcher}.go` - verified current wiring applies `.gitignore` via Git hook augmentation, not standalone mode-off path; tests run: none; bug fixes discovered: scope gap logged for Phase 23; files touched: none.
-- 2026-03-11: test read audit for `internal/scan/ignore_test.go`, `internal/git/hook_provider_test.go`, `internal/cli/{analyze_test.go,scan_request_test.go,analyze_output_test.go}`, `cmd/reglint/main_test.go`, `cmd/reglint/e2e_harness_*_test.go` - verified staged-mode precedence coverage and lack of explicit mode-off default `.gitignore` contract test; tests run: none; bug fixes discovered: none; files touched: none.
-- 2026-03-11: `git status --short` - verified clean tree before plan rewrite; tests run: none; bug fixes discovered: none; files touched: none.
-- 2026-03-11: Updated `IMPLEMENTATION_PLAN.md` for `gitignore` scope - replaced stale e2e plan with phase-based gitignore gap plan; tests run: none (plan-only update); bug fixes discovered: none; files touched: `IMPLEMENTATION_PLAN.md`.
-- 2026-03-12: go test ./internal/cli -run TestBuildScanRequestGitModeOffIncludesGitignoreByDefault - failed as expected; default mode-off ignore list did not include `.gitignore`.
-- 2026-03-12: go test ./cmd/reglint -run TestRunAnalyzeGitModeOffAppliesGitignoreByDefault - failed as expected; mode-off runtime scan did not apply `.gitignore`.
-- 2026-03-12: go test ./internal/cli -run 'TestBuildScanRequestGitModeOffIncludesGitignoreByDefault|TestBuildScanRequestCLIOverridesRuleSetGitSettings|TestBuildScanRequestUsesRuleSetGitSettingsWithoutCLIOverrides|TestParseAnalyzeGitDefaults|TestParseAnalyzeGitFlags' && go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOffDoesNotRequireGit|TestRunAnalyzeGitModeOffAppliesGitignoreByDefault' - passed.
-- 2026-03-12: go test ./internal/cli ./cmd/reglint - passed.
-- 2026-03-12: go test ./internal/scan ./internal/git ./internal/hooks - passed.
-- 2026-03-12: go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOffNoGitignoreFlagDisablesConfiguredGitignore|TestRunAnalyzeGitModeStagedNoGitignoreFlagDisablesConfiguredGitignore' - failed (expected behavior gap: `--no-gitignore` still applied configured `.gitignore` in mode-off; staged test fixture setup needed nested directory creation).
-- 2026-03-12: go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOffNoGitignoreFlagDisablesConfiguredGitignore|TestRunAnalyzeGitModeStagedNoGitignoreFlagDisablesConfiguredGitignore' - passed after removing configured `.gitignore` when gitignore is disabled and fixing staged fixture setup.
-- 2026-03-12: go test ./internal/cli ./cmd/reglint - passed after `--no-gitignore` override fix.
-- 2026-03-12: go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOffRuleSetGitignoreDisabledDisablesConfiguredGitignore|TestRunAnalyzeGitModeStagedRuleSetGitignoreDisabledDisablesConfiguredGitignore' - passed; added regression coverage for RuleSet `git.gitignoreEnabled: false` behavior in both non-Git and Git scan modes.
-- 2026-03-12: go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOff|TestRunAnalyzeGitModeStaged' - passed after adding RuleSet-driven `.gitignore` disable tests.
-- 2026-03-12: go test ./cmd/reglint -run 'TestE2EFull007GitModeOffWorksWhenGitExecutableUnavailable|TestRunAnalyzeGitModeOffAppliesGitignoreByDefault' - passed; e2e process-boundary coverage now verifies default `.gitignore` filtering in `git-mode=off` without Git.
-- 2026-03-12: go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOffNoIgnoreFilesFlagDisablesAllIgnoreProcessing|TestRunAnalyzeGitModeStagedNoIgnoreFilesFlagDisablesAllIgnoreProcessing' - passed; added process-level regressions confirming `--no-ignore-files` bypasses `.gitignore`, `.ignore`, and `.reglintignore` in both scan modes.
-- 2026-03-12: go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOff|TestRunAnalyzeGitModeStaged' - passed with new `--no-ignore-files` precedence contracts.
-- 2026-03-12: go test ./cmd/reglint - passed after no-ignore-files precedence regression additions.
-- 2026-03-12: go test ./internal/scan ./internal/cli ./internal/git ./internal/hooks - passed; targeted internal suites remain green after no-ignore-files contract coverage updates.
-- 2026-03-12: `git diff -- README.md` - confirmed README updates document default ignore behavior across scan modes and one-run overrides (`--no-gitignore`, `--no-ignore-files`).
-- 2026-03-12: `go test ./internal/cli -run 'TestRunShowsHelpForRootFlag|TestRunShowsHelpForAnalyzeFlag|TestRunShowsHelpForAnalyseFlag|TestRunShowsHelpForInitFlag'` - passed.
-- 2026-03-12: `go test ./cmd/reglint -run 'TestRunAnalyzeGitModeOffAppliesGitignoreByDefault|TestRunAnalyzeGitModeOffNoGitignoreFlagDisablesConfiguredGitignore|TestRunAnalyzeGitModeOffNoIgnoreFilesFlagDisablesAllIgnoreProcessing|TestRunAnalyzeGitModeStagedNoGitignoreFlagDisablesConfiguredGitignore|TestRunAnalyzeGitModeStagedNoIgnoreFilesFlagDisablesAllIgnoreProcessing'` - passed.
-- 2026-03-12: `make test` - passed.
+- 2026-09-15: `git log --oneline -n 5 -- specs/formatter-github.md` - latest (and only) spec commit is `30252e9` "Add GitHub Formatter specification", current HEAD; tests run: none (planning mode); bug fixes discovered: none; files touched: none.
+- 2026-09-15: read `specs/formatter-github.md` - confirmed locked design: FormatID `github`, stdout-only (no `--out-github`), syntax `::{level} file=,line=,col=,title=::{message}`, severity map error/error warning/warning notice/notice info/notice, RC%04d rule ids, 10-per-level caps + single summary notice, shared ordering, escaping table; tests run: none; bug fixes discovered: none; files touched: none.
+- 2026-09-15: glob `internal/**/*.go` + grep `github|workflow command|::(error|warning|notice)` across `internal`, `cmd`, `README.md` - confirmed zero implementation: no `internal/output/github.go`, no workflow-command emitters, no `github` format references; tests run: none; bug fixes discovered: none; files touched: none.
+- 2026-09-15: read `internal/cli/analyze.go:176-209,273-307,714-819`, `internal/output/{formatter,registry,sarif,console}.go` - mapped all wiring points: `parseFormats` registry (analyze.go:196-200), `defaultOutputRegistry` (analyze.go:742-748), `renderFormat` switch (analyze.go:757-766), `validateOutputPaths` multi-format rule (analyze.go:273-292, no change needed for github); confirmed reusable `ruleIDForIndex` (sarif.go:108), `normalizePath` (sarif.go:102), `severityRank` (console.go:228); tests run: none; bug fixes discovered: none; files touched: none.
+- 2026-09-15: read test conventions `internal/output/golden_test.go`, `internal/output/ansi_assertions_test.go`, `internal/cli/analyze_output_test.go`, grep `cmd/reglint/main_test.go` - identified golden/stdout/multi-format/process test patterns to extend; tests run: none; bug fixes discovered: none; files touched: none.
+- 2026-09-15: `git status --short` - clean tree before plan rewrite; tests run: none; bug fixes discovered: none; files touched: none.
+- 2026-09-15: regenerated `IMPLEMENTATION_PLAN.md` - replaced stale gitignore-scope plan (dated 2026-03-12) with formatter-github plan; tests run: none (plan-only update); bug fixes discovered: none; files touched: `IMPLEMENTATION_PLAN.md`.
 
 ## Summary
 
-| Phase                                                               | Status   |
-| ------------------------------------------------------------------- | -------- |
-| Phase 21: Scope reset and spec delta confirmation                   | Complete |
-| Phase 22: Confirmed existing implementation coverage                | Complete |
-| Phase 23: Align runtime with default `.gitignore` across scan modes | Complete |
-| Phase 24: Documentation and verification evidence alignment         | Complete |
+| Phase | Status |
+| --- | --- |
+| Phase 1: Formatter core in `internal/output` | Not started |
+| Phase 2: Registry and CLI wiring | Not started |
+| Phase 3: Tests | Not started |
+| Phase 4: Docs and spec-index alignment | Not started (spec deltas blocked on user approval) |
+| Phase 5: Final verification | Not started |
 
-**Remaining effort:** None.
+**Remaining effort:** Phases 1-3 are the core (one new file `internal/output/github.go` + three wiring points in `internal/cli/analyze.go` + tests); Phase 4 is small README work with one blocked spec-delta item; Phase 5 is gate runs.
 
 ## Known Existing Work
 
-- `internal/config` already supports `ignoreFilesEnabled`, `ignoreFiles`, and `git.gitignoreEnabled` with validation/default propagation.
-- `internal/cli/analyze.go` already exposes and parses `--no-ignore-files` and `--no-gitignore`, and merges ignore settings into `scan.Request`.
-- `internal/ignore` already provides deterministic loader/parser/matcher behavior with source+line error metadata.
-- `internal/git/hook_provider.go` + `internal/hooks/scan_hooks.go` already support deterministic `.gitignore` augmentation for Git-enabled runs.
-- `internal/scan/engine.go` already enforces include/exclude before ignore matching and keeps deterministic file/match ordering.
-- `cmd/reglint/main_test.go` and `cmd/reglint/e2e_harness_*_test.go` already cover staged-mode precedence (`.reglintignore > .ignore > .gitignore`) and replayable process-level assertions.
+- `specs/formatter-github.md` is complete (Draft) and indexed in `specs/README.md:39`; design decisions are locked in the spec — implement to it, do not re-litigate.
+- Formatter interface (`internal/output/formatter.go`) and `Registry` (`internal/output/registry.go`) already support adding a formatter with zero registry changes.
+- `internal/output/sarif.go` already provides `ruleIDForIndex` (RC%04d) and `normalizePath` — spec mandates identical mappings; reuse, do not duplicate.
+- `internal/output/console.go` already provides `severityRank` for the shared ordering.
+- Golden-test infrastructure (`assertGoldenBytes`, `testdata/golden/`) and ANSI-free assertion helpers already exist for formatter testing.
+- Multi-format stdout/file routing rules for json/sarif already exist in `validateOutputPaths`/`write*Output` — `github` intentionally has no file branch.
 
 ## Manual Deployment Tasks
 
-None
+- Manual QA in a real GitHub repository: run a `pull_request` workflow using `--format github` and confirm annotations appear in the run summary and inline in the PR Files changed view (spec Verifications, formatter-github.md:159). Cannot be verified locally.
+- Optional follow-up (not deployment-blocking): decide whether reglint-action marketplace workflow docs should mention `--format github` vs reviewdog/SARIF (spec Non-Goals defers this to `specs/release-process.md`).
