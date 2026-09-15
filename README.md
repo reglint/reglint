@@ -4,7 +4,7 @@
 [![e2e-full](https://github.com/reglint/reglint/actions/workflows/e2e-full.yml/badge.svg)](https://github.com/reglint/reglint/actions/workflows/e2e-full.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-RegLint is a regex-based linter for source repositories. It scans files using YAML-defined rules and emits `console`, `json`, or `sarif` output for local development and CI pipelines.
+RegLint is a regex-based linter for source repositories. It scans files using YAML-defined rules and emits `console`, `json`, `sarif`, or `github` output for local development and CI pipelines.
 
 ## Install
 
@@ -156,11 +156,13 @@ NO_COLOR=1 reglint analyze --config reglint-rules.yaml --format console
 - `console` writes to stdout.
 - `json` writes to stdout only when it is the single selected format.
 - `sarif` writes to stdout only when it is the single selected format.
+- `github` writes GitHub Actions annotations to stdout — always stdout, even alongside other formats; annotations are only recognized in the step log, so there is no `--out-github` flag.
 - When combining multiple formats, use `--out-json` and/or `--out-sarif` as needed.
 
 ```bash
 reglint analyze --format console,json --out-json /tmp/scan.json
 reglint analyze --format sarif --out-sarif /tmp/scan.sarif
+reglint analyze --format github,sarif --out-sarif /tmp/scan.sarif
 ```
 
 ## Baseline Workflow
@@ -296,6 +298,51 @@ Notes:
 - Keep `--format console,sarif` so logs stay visible in job output while SARIF is archived.
 - If you use `--fail-on`, findings at that threshold fail the job with exit code `2`.
 - `if: always()` on SARIF upload keeps diagnostics available even when analyze fails.
+
+## CI Recipe: PR Annotations (GitHub Actions)
+
+`--format github` writes GitHub Actions workflow commands, so the runner surfaces findings as annotations in the run summary and inline in the PR "Files changed" view — no token, upload step, or extra permissions:
+
+```yaml
+name: reglint-annotations
+
+on:
+  pull_request:
+
+jobs:
+  annotate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build reglint
+        run: make build
+
+      - name: Annotate added lines
+        run: |
+          ./bin/reglint analyze \
+            --config reglint-rules.yaml \
+            --format github \
+            --git-mode diff \
+            --git-diff "origin/${{ github.base_ref }}" \
+            --git-added-lines-only
+```
+
+Notes:
+
+- GitHub caps annotations at 10 per severity per step; pair with `--format json,sarif` and out flags for the full list.
+- `--git-added-lines-only` restricts annotations to lines the PR adds, so pre-existing findings stay out of review.
+- With `--fail-on`, findings at that threshold fail the job with exit code `2` while annotations still render.
 
 ## Troubleshooting
 
