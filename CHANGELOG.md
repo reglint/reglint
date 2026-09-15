@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Community health files: `SECURITY.md`, `CODE_OF_CONDUCT.md`, GitHub issue templates, and a pull request template.
+
+### Changed
+
+- README restructured for discoverability: release badge, expanded overview with example output, table of contents, comparison table, and FAQ.
+
 ## [0.2.0] - 2026-09-15
 
 ### Added

@@ -1,10 +1,38 @@
 # RegLint
+
+[![Release](https://img.shields.io/github/v/release/reglint/reglint)](https://github.com/reglint/reglint/releases)
 [![quality](https://github.com/reglint/reglint/actions/workflows/quality.yml/badge.svg)](https://github.com/reglint/reglint/actions/workflows/quality.yml)
 [![security](https://github.com/reglint/reglint/actions/workflows/security.yml/badge.svg)](https://github.com/reglint/reglint/actions/workflows/security.yml)
 [![e2e-full](https://github.com/reglint/reglint/actions/workflows/e2e-full.yml/badge.svg)](https://github.com/reglint/reglint/actions/workflows/e2e-full.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-RegLint is a regex-based linter for source repositories. It scans files using YAML-defined rules and emits `console`, `json`, `sarif`, or `github` output for local development and CI pipelines.
+**Your own linter, defined in YAML regex.** RegLint is a regex-based static analysis tool for source repositories: scan any codebase with rules you write and report findings as console output, JSON, SARIF, or native GitHub Actions PR annotations.
+
+- **Plain YAML rules** — a message, an RE2 regex, a severity: that's a rule.
+- **CI-native** — `github` output format emits PR annotations; SARIF uploads to GitHub code scanning.
+- **Fast and dependency-free** — a single static Go binary with parallel scans, `.gitignore` support, baseline mode, and staged/diff scoping.
+
+## Table of Contents
+
+- [Install](#install)
+- [Quickstart](#quickstart)
+- [Why RegLint?](#why-reglint)
+- [Use in GitHub Actions](#use-in-github-actions)
+- [CLI Overview](#cli-overview)
+- [Exit Codes](#exit-codes)
+- [Configuration](#configuration)
+- [Output Formats](#output-formats)
+- [Baseline Workflow](#baseline-workflow)
+- [Git-Scoped Scans](#git-scoped-scans)
+- [Development](#development)
+- [Documentation](#documentation)
+- [CI Recipe (GitHub Actions)](#ci-recipe-github-actions)
+- [CI Recipe: PR Annotations (GitHub Actions)](#ci-recipe-pr-annotations-github-actions)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+- [Changelog](#changelog)
+- [License](#license)
 
 ## Install
 
@@ -59,7 +87,44 @@ reglint init
 reglint analyze --config reglint-rules.yaml
 ```
 
-Use `reglint --help` or `reglint analyze --help` for the full command reference.
+A rule is a message, a regex, and a severity:
+
+```yaml
+rules:
+  - message: "Avoid hardcoded token: $1"
+    regex: "token\\s*[:=]\\s*([A-Za-z0-9_-]+)"
+    severity: "error"
+    paths:
+      - "src/**"
+```
+
+Findings print per file with `line:column` positions, and a summary line closes the run:
+
+```text
+src/client.go
+- ERROR 42:12 Avoid hardcoded token: sk_live_example
+  src/client.go:42
+
+Summary: files=31 skipped=0 matches=1 durationMs=18
+```
+
+The exit code is `2` when a finding meets the `--fail-on` threshold — see [Exit Codes](#exit-codes). Use `reglint --help` or `reglint analyze --help` for the full command reference.
+
+
+## Why RegLint?
+
+RegLint sits between one-off `grep` invocations and heavyweight language-aware analyzers. It is for team-specific rules — banned APIs, TODO policies, license headers, hardcoded tokens, naming conventions — that apply across languages and that you want enforced in CI today.
+
+| | `grep` + shell scripts | Secret scanners (gitleaks, trufflehog) | Language-aware analyzers (semgrep) | RegLint |
+|---|---|---|---|---|
+| Custom rules | Ad hoc pipelines | TOML rulesets | Per-language DSL | One YAML schema for every file type |
+| Language coverage | Any text | Any (secret patterns) | One language per ruleset | Any text |
+| Severity levels + fail threshold | DIY exit codes | Varies | Yes | Built in (`--fail-on`) |
+| Baseline of known findings | No | Varies | Varies | Built in |
+| GitHub PR annotations + SARIF | No | Varies | Via extra tooling | Native output formats |
+| Deployment | Your scripts | Single binary | Binary or server | Single static binary |
+
+When to pick something else: you need AST-accurate matches inside one language (semgrep), or a curated provider-specific secrets database (gitleaks). When you need your own rules everywhere, RegLint gets out of the way.
 
 ## Use in GitHub Actions
 
@@ -356,6 +421,32 @@ Notes:
   - This is expected when `--fail-on` threshold is met; tune `failOn` in config or CLI if needed.
 - No findings in staged/diff mode when you expected matches
   - Verify file selection (`--git-mode`, `--git-diff`) and ignore settings (`--no-gitignore`, `--no-ignore-files`).
+
+## FAQ
+
+### What is RegLint?
+
+A regex-based linter for source repositories. You define rules in a YAML file (`reglint-rules.yaml`), point RegLint at a directory, and it reports every match with file, line, and column plus a severity. It ships as a single static binary written in Go.
+
+### How is RegLint different from Semgrep?
+
+Semgrep matches code with per-language AST patterns; RegLint matches text with RE2 regexes. That makes RegLint language-agnostic — the same rule scans Go, TypeScript, Terraform, and plain config files — at the cost of AST precision. Many teams run both: Semgrep for language-deep rules, RegLint for cross-cutting conventions.
+
+### Can RegLint find hardcoded secrets?
+
+Yes — a secret is just a regex match. The starter from `reglint init` and the [Quickstart](#quickstart) example show a hardcoded-token rule; combine `paths`, severity, and `--fail-on error` to block merges on leaked credentials. For curated provider-specific detection, a dedicated scanner is a good complement.
+
+### Does RegLint support GitHub code scanning and SARIF?
+
+Yes. `--format sarif` emits a SARIF report you can upload with `github/codeql-action/upload-sarif`, and `--format github` writes native workflow commands that render findings as PR annotations — no upload step, no extra token.
+
+### How do I ignore vendored or generated files?
+
+Ignore files are processed by default in this order: `.gitignore`, `.ignore`, `.reglintignore`. Add paths there, control them globally with `include` / `exclude` globs in the config, per rule with `paths` / `exclude`, or disable with `--no-gitignore` / `--no-ignore-files`.
+
+### How do I adopt RegLint on a legacy codebase?
+
+Generate a baseline once with `--write-baseline`, commit it, and run with `--baseline` in CI so only new findings fail the build. See [Baseline Workflow](#baseline-workflow).
 
 ## Contributing
 
