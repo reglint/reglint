@@ -4,5 +4,4 @@ specs-dir = "specs"
 log-file = "./logs/ralph.log"
 no-log = false
 
-agent = "opencode"
-agent-mode = "ralph"
+agent = "oh-my-pi"
