@@ -11,9 +11,9 @@
       "integrity": "sha256:9d87bdd69e7b37554488291e79b37a40d1e18beddfa151454570d5bf72423df8"
     },
     "ghcr.io/devcontainers/features/common-utils:": {
-      "version": "2.5.7",
-      "resolved": "ghcr.io/devcontainers/features/common-utils@sha256:dbf431d6b42d55cde50fa1df75c7f7c3999a90cde6d73f7a7071174b3c3d0cc4",
-      "integrity": "sha256:dbf431d6b42d55cde50fa1df75c7f7c3999a90cde6d73f7a7071174b3c3d0cc4"
+      "version": "2.5.9",
+      "resolved": "ghcr.io/devcontainers/features/common-utils@sha256:cb0c4d3c276f157eed17935747e364178d75fee17f55c4e129966f64633deb3a",
+      "integrity": "sha256:cb0c4d3c276f157eed17935747e364178d75fee17f55c4e129966f64633deb3a"
     },
     "ghcr.io/iyaki/devcontainer-features/lefthook:": {
       "version": "2.0.1",
@@ -24,6 +24,11 @@
       "version": "1.0.0",
       "resolved": "ghcr.io/iyaki/devcontainer-features/oh-my-pi@sha256:8d6fbcf27a0e67ae24252200520f5ef3a8c4dd46a3442032ecee110af741b272",
       "integrity": "sha256:8d6fbcf27a0e67ae24252200520f5ef3a8c4dd46a3442032ecee110af741b272"
+    },
+    "ghcr.io/iyaki/devcontainer-features/ralph:": {
+      "version": "1.0.2",
+      "resolved": "ghcr.io/iyaki/devcontainer-features/ralph@sha256:1ef1c30d79ec16144393bcf56c3beccd47670c181c4073e01370493ae3ac51d9",
+      "integrity": "sha256:1ef1c30d79ec16144393bcf56c3beccd47670c181c4073e01370493ae3ac51d9"
     }
   }
 }
