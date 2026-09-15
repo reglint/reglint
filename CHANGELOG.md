@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The state of `main` between releases is described under [Unreleased].
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-09-15
+
 ### Added
 
 - GitHub Actions output format: `--format github` emits workflow commands (`::error` / `::warning` / `::notice` annotations) with `file` / `line` / `col` / rule `title` metadata, sensitive match text escaped, capped at 10 annotations per severity with a summary line pointing to `--format json` or `sarif` for the full list.
