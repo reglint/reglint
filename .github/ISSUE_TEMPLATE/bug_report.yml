@@ -1,0 +1,38 @@
+name: Bug report
+description: Report something RegLint does wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Commands run, config file, and output. Please redact sensitive match text from rules and findings.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: RegLint version
+      description: Output of `reglint version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install method
+      options:
+        - Homebrew
+        - install.sh
+        - go install
+        - Prebuilt binary
+        - Built from source
+        - reglint-action
+    validations:
+      required: false
