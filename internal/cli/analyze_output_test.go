@@ -73,6 +73,63 @@ func TestWriteSARIFOutputToStdout(t *testing.T) {
 	}
 }
 
+func TestRenderOutputsWritesGitHubToStdout(t *testing.T) {
+	t.Parallel()
+	lockAnalyzeOutput(t)
+
+	cfg := Config{Formats: []string{"github"}}
+	result := scan.Result{Matches: []scan.Match{{
+		Message:   "Found token token=abc",
+		Severity:  "error",
+		FilePath:  "sample.txt",
+		Line:      1,
+		Column:    1,
+		MatchText: "token=abc",
+		RuleIndex: 0,
+	}}}
+	buffer := &bytes.Buffer{}
+
+	if err := renderOutputs(cfg.Formats, sampleRules(), cfg, output.ConsoleColorSettings{}, result, buffer); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	want := "::error file=sample.txt,line=1,col=1,title=RC0001::Found token token=abc\n"
+	if buffer.String() != want {
+		t.Fatalf("unexpected stdout output: %q", buffer.String())
+	}
+}
+
+func TestRenderOutputsGitHubWithSarifFile(t *testing.T) {
+	t.Parallel()
+	lockAnalyzeOutput(t)
+
+	path := filepath.Join(t.TempDir(), "scan.sarif")
+	cfg := Config{Formats: []string{"github", "sarif"}, OutSARIF: path}
+	result := scan.Result{Matches: []scan.Match{{
+		Message:   "Found token token=abc",
+		Severity:  "error",
+		FilePath:  "sample.txt",
+		Line:      1,
+		Column:    1,
+		MatchText: "token=abc",
+		RuleIndex: 0,
+	}}}
+	buffer := &bytes.Buffer{}
+
+	if err := renderOutputs(cfg.Formats, sampleRules(), cfg, output.ConsoleColorSettings{}, result, buffer); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(buffer.String(), "::error file=sample.txt") {
+		t.Fatalf("expected github annotations on stdout, got %q", buffer.String())
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("failed to read sarif output: %v", err)
+	}
+	if !strings.Contains(string(data), "sample.txt") {
+		t.Fatalf("expected sarif file output, got %q", string(data))
+	}
+}
+
 func TestRenderOutputsWritesJSONFile(t *testing.T) {
 	t.Parallel()
 	lockAnalyzeOutput(t)
