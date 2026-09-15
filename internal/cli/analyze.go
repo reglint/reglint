@@ -197,6 +197,7 @@ func parseFormats(value string) ([]string, error) {
 		output.ConsoleFormatter{},
 		output.JSONFormatter{},
 		output.SARIFFormatter{},
+		output.GitHubFormatter{},
 	)
 	if err != nil {
 		return nil, err
@@ -744,9 +745,9 @@ func defaultOutputRegistry(ruleset []rules.Rule, consoleColors output.ConsoleCol
 		output.ConsoleFormatter{ColorSettings: consoleColors},
 		output.JSONFormatter{},
 		output.SARIFFormatter{Rules: ruleset},
+		output.GitHubFormatter{Rules: ruleset},
 	)
 }
-
 func renderFormat(
 	formatter output.Formatter,
 	cfg Config,
@@ -759,6 +760,8 @@ func renderFormat(
 		return formatter.Write(result, out)
 	case "json":
 		return writeJSONOutput(cfg, result, out)
+	case "github":
+		return formatter.Write(result, out)
 	case "sarif":
 		return writeSARIFOutput(cfg, result, ruleset, out)
 	default:

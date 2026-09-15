@@ -383,6 +383,30 @@ func TestHandleAnalyzeReturnsErrorWhenFormatsInvalid(t *testing.T) {
 	}
 }
 
+func TestHandleAnalyzeWritesGitHubAnnotations(t *testing.T) {
+	t.Parallel()
+	setAnalyzeCwd(t)
+
+	rootDir := t.TempDir()
+	writeFile(t, rootDir, "sample.txt", "token=abc")
+	configPath := writeConfig(t, sampleConfig())
+
+	var output bytes.Buffer
+	code := HandleAnalyze([]string{
+		"--config", configPath,
+		"--format", "github",
+		rootDir,
+	}, &output)
+
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d", code)
+	}
+	want := "::error file=sample.txt,line=1,col=1,title=RC0001::Found token token=abc\n"
+	if output.String() != want {
+		t.Fatalf("unexpected output: %q", output.String())
+	}
+}
+
 func TestHandleAnalyzeRejectsGitModeDiffWithoutGitDiff(t *testing.T) {
 	t.Parallel()
 	setAnalyzeCwd(t)

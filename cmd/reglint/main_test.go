@@ -838,6 +838,34 @@ func TestRunAnalyzeBaselineCompareSARIFOutputRemainsANSIFreeAndSchemaStable(t *t
 	}
 }
 
+func TestRunAnalyzeGitHubFormatEmitsAnnotations(t *testing.T) {
+	t.Parallel()
+
+	rootDir := t.TempDir()
+	configDir := t.TempDir()
+	writeFixture(t, rootDir, "sample.txt", "token=abc")
+	configPath := writeRuleConfig(t, configDir, "")
+
+	var output bytes.Buffer
+	code := run([]string{
+		"analyze",
+		"--config", configPath,
+		"--format", "github",
+		rootDir,
+	}, &output)
+
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d", code)
+	}
+	if strings.Contains(output.String(), "\x1b[") {
+		t.Fatalf("expected ANSI-free github output, got %q", output.String())
+	}
+	want := "::error file=sample.txt,line=1,col=1,title=RC0001::Found token token=abc\n"
+	if output.String() != want {
+		t.Fatalf("unexpected output: %q", output.String())
+	}
+}
+
 func TestRunAnalyzeGitModeOffDoesNotRequireGit(t *testing.T) {
 	rootDir := t.TempDir()
 	configDir := t.TempDir()
