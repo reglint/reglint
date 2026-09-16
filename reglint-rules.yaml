@@ -1,0 +1,63 @@
+# RegLint repository policy - the Go rules RegLint enforces on its own codebase.
+# Runs in CI (quality workflow, `reglint` job) and locally via `make scan`.
+include:
+  - "**/*.go"
+exclude:
+  - "**/.git/**"
+  - "**/vendor/**"
+failOn: "warning"
+rules:
+  # Deprecated standard library APIs
+  - message: "io/ioutil is deprecated since Go 1.16 - use io or os equivalents"
+    regex: '\bioutil\.[A-Z]\w*'
+    severity: warning
+
+  - message: "rand.Seed is deprecated since Go 1.20 - the global source is auto-seeded"
+    regex: '\brand\.Seed\('
+    severity: warning
+
+  - message: "strings.Title is deprecated - handle word capitalization explicitly"
+    regex: '\bstrings\.Title\('
+    severity: warning
+
+  # Modernization
+  - message: "interface{} can be written as any since Go 1.18"
+    regex: '\binterface\{\}'
+    severity: info
+
+  # Correctness / safety smells
+  - message: "panic in non-test library code - return an error instead"
+    regex: '\bpanic\('
+    severity: warning
+    exclude:
+      - "**/main.go"
+      - "**/*_test.go"
+
+  - message: "dynamically built command (fmt.Sprintf or concatenation) - injection risk, validate inputs"
+    regex: 'exec\.Command(Context)?\([^)]*(fmt\.Sprintf|(\w|\])\s*\+)'
+    severity: warning
+
+  - message: "sync.Mutex passed by value copies the lock - use *sync.Mutex"
+    regex: '(func\s+\w+\(\s*|,\s*)\w+\s+sync\.(Mutex|RWMutex)\s*[,)]'
+    severity: warning
+
+  - message: "math/rand in security-sensitive code - use crypto/rand"
+    regex: '\bmath/rand\b'
+    severity: warning
+    paths:
+      - "**/*auth*.go"
+      - "**/*token*.go"
+      - "**/*secret*.go"
+      - "**/*session*.go"
+      - "**/crypto/**/*.go"
+
+  # Hygiene
+  - message: "debug print left in code - remove or use a logger"
+    regex: '\bfmt\.Print(ln|f)?\('
+    severity: info
+
+  - message: "time.Sleep in production code - prefer context/time-based waiting"
+    regex: '\btime\.Sleep\('
+    severity: info
+    exclude:
+      - "**/*_test.go"
