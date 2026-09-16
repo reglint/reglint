@@ -110,6 +110,7 @@ Summary: files=31 skipped=0 matches=1 durationMs=18
 
 The exit code is `2` when a finding meets the `--fail-on` threshold — see [Exit Codes](#exit-codes). Use `reglint --help` or `reglint analyze --help` for the full command reference.
 
+RegLint validates its own codebase in CI with the same rule schema — the repository policy lives in [`reglint-rules.yaml`](reglint-rules.yaml) and runs as the `reglint` job in [quality](.github/workflows/quality.yml) (`make scan` locally).
 
 ## Why RegLint?
 

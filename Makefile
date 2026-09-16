@@ -2,7 +2,7 @@
 
 
 .PHONY: help quality all format lint test coverage test-coverage test-race test-flaky test-e2e-smoke test-e2e mutation test-mutation \
-	security arch build run analyze-example analyze-fail release-check release-snapshot
+	security arch scan build run analyze-example analyze-fail release-check release-snapshot
 
 GLOBAL_TARGETS ?=
 BUILD_OUT ?= bin/reglint
@@ -24,6 +24,7 @@ help:
 	"  make mutation        Run mutation testing (final stage)" \
 	"  make security        Run govulncheck and gosec" \
 	"  make arch            Run go-arch-lint" \
+	"  make scan            Run RegLint self-scan with repository rules" \
 	"  make build           Build CLI binary to $(BUILD_OUT)" \
 	"  make run ARGS='...'  Run CLI from source" \
 	"  make analyze-example Analyze test fixtures with example config" \
@@ -31,7 +32,7 @@ help:
 	"  make release-check    Validate goreleaser config" \
 	"  make release-snapshot Build release artifacts locally (no publish)"
 
-quality: test lint test-race test-flaky test-coverage test-mutation security arch
+quality: test lint test-race test-flaky test-coverage test-mutation security arch scan
 
 format:
 	gofmt -w $$(git ls-files '*.go')
@@ -77,6 +78,9 @@ security:
 
 arch:
 	go-arch-lint check
+
+scan:
+	go run ./cmd/reglint analyze .
 
 release-check:
 	goreleaser check
