@@ -15,6 +15,7 @@
 ## Table of Contents
 
 - [Install](#install)
+- [Install with an AI agent](#install-with-an-ai-agent)
 - [Quickstart](#quickstart)
 - [Why RegLint?](#why-reglint)
 - [Use in GitHub Actions](#use-in-github-actions)
@@ -77,6 +78,16 @@ cd reglint
 make build
 ./bin/reglint --help
 ```
+
+## Install with an AI agent
+
+Point your coding agent (Claude Code, OpenCode, Cursor, Copilot, …) at the setup skill and it does the rest: detects your stack, asks whether you want CI, git hooks, or both, then authors a starter `reglint-rules.yaml` from your repo's own conventions (existing linter configs, banned APIs, code policies) plus universal secret rules — and generates the integration files: a GitHub Actions workflow (via [`reglint/reglint-action`](https://github.com/reglint/reglint-action)) and/or a committed `.githooks/pre-commit` wired into `core.hooksPath`.
+
+Give your agent this instruction:
+
+> Instala reglint siguiendo las instrucciones de https://raw.githubusercontent.com/reglint/reglint/main/skills/reglint-setup/SKILL.md
+
+The skill is plain markdown — read or review it at [`skills/reglint-setup/SKILL.md`](skills/reglint-setup/SKILL.md).
 
 ## Quickstart
 
