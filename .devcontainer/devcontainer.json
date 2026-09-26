@@ -11,16 +11,16 @@
 
 	"mounts": [
 		// OpenCode config and data - https://opencode.ai/docs/cli/#configuration-and-data
-		{
-			"source": "${localEnv:HOME}/.opencode",
-			"target": "/home/codespace/.local/share/opencode",
-			"type": "bind"
-		},
-		{
-			"source": "${localEnv:HOME}/.local/state/opencode",
-			"target": "/home/codespace/.local/state/opencode",
-			"type": "bind"
-		},
+		// {
+		// 	"source": "${localEnv:HOME}/.opencode",
+		// 	"target": "/home/codespace/.local/share/opencode",
+		// 	"type": "bind"
+		// },
+		// {
+		// 	"source": "${localEnv:HOME}/.local/state/opencode",
+		// 	"target": "/home/codespace/.local/state/opencode",
+		// 	"type": "bind"
+		// },
 		// Global vercel skills config
 		{
 			"source": "${localWorkspaceFolder}/.agents/.skill-lock.json",
@@ -48,17 +48,17 @@
 
 	"remoteEnv": {
 		// https://opencode.ai/docs/cli/#environment-variables
-		"OPENCODE_EXPERIMENTAL_LSP_TOOL": "true",
-		"OPENCODE_EXPERIMENTAL_LSP_TY": "true",
-		"OPENCODE_ENABLE_EXPERIMENTAL_MODELS": "true",
-		"OPENCODE_DISABLE_AUTOCOMPACT": "true",
-		"OPENCODE_DISABLE_CLAUDE_CODE": "true",
-		"OPENCODE_DISABLE_FILETIME_CHECK": "true",
-		"OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER": "true",
-		"OPENCODE_EXPERIMENTAL_MARKDOWN": "true",
-		"OPENCODE_EXPERIMENTAL_PLAN_MODE": "true",
-		"OPENCODE_EXPERIMENTAL_ICON_DISCOVERY": "true",
-		"OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS": "300000",
+		// "OPENCODE_EXPERIMENTAL_LSP_TOOL": "true",
+		// "OPENCODE_EXPERIMENTAL_LSP_TY": "true",
+		// "OPENCODE_ENABLE_EXPERIMENTAL_MODELS": "true",
+		// "OPENCODE_DISABLE_AUTOCOMPACT": "true",
+		// "OPENCODE_DISABLE_CLAUDE_CODE": "true",
+		// "OPENCODE_DISABLE_FILETIME_CHECK": "true",
+		// "OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER": "true",
+		// "OPENCODE_EXPERIMENTAL_MARKDOWN": "true",
+		// "OPENCODE_EXPERIMENTAL_PLAN_MODE": "true",
+		// "OPENCODE_EXPERIMENTAL_ICON_DISCOVERY": "true",
+		// "OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS": "300000",
 		// "PLAYWRIGHT_DOCKER_IMAGE": "mcr.microsoft.com/playwright:v1.58.2-noble",
 		"PATH": "${containerEnv:PATH}:scripts:bin",
 		// For usage with /editr command from OpenCode - https://opencode.ai/docs/tui/#editor-setup
@@ -74,8 +74,7 @@
 		"ghcr.io/devcontainers/features/common-utils:": {
 			"installZsh": false,
 			"installOhMyZsh": false,
-			"installOhMyZshConfig": false,
-			"username": "automatic"
+			"installOhMyZshConfig": false
 		},
 		"ghcr.io/devcontainers-extra/features/shfmt:": {},
 		"ghcr.io/devcontainers-extra/features/opencode:": {},
@@ -100,6 +99,7 @@
 		"Install go tools": "/bin/bash .devcontainer/install-go-tools.sh",
 		"Setup lefthook": "lefthook install"
 	}
+
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
