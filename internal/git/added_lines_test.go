@@ -4,6 +4,7 @@ package git
 import (
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -119,9 +120,29 @@ func TestSelectAddedLinesRejectsPathOutsideRepositoryRoot(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	if err.Error() != "git mode staged failed to resolve added lines" {
+	if !strings.HasPrefix(err.Error(), "git mode staged failed to resolve added lines: ") {
 		t.Fatalf("unexpected error: %v", err)
 	}
+}
+
+func TestParseAddedLinesHandlesDiffLinesOver64KiB(t *testing.T) {
+	oversizedLine := "+" + strings.Repeat("A", 128*1024)
+	diff := strings.Join([]string{
+		"+++ pkg/big.json",
+		"@@ -0,0 +1 @@",
+		oversizedLine,
+		"+++ pkg/alpha.go",
+		"@@ -5,0 +6,2 @@",
+		"+alpha",
+		"+beta",
+	}, "\n")
+
+	addedLines, err := parseAddedLines(diff)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	assertLineSet(t, addedLines, "pkg/big.json", []int{1})
+	assertLineSet(t, addedLines, "pkg/alpha.go", []int{6, 7})
 }
 
 func TestParseAddedLinesReturnsEmptyMapForFilesWithoutAddedHunks(t *testing.T) {

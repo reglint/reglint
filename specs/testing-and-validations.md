@@ -193,6 +193,7 @@ make arch
 - Mixed include/exclude rules and per-rule overrides.
 - Baseline key stability for `(filePath, message)` with deterministic suppression ordering.
 - Precedence stability across Git selection, include/exclude, ignore handling, per-rule filters, and added-lines filtering.
+- Added-lines resolution parses diffs containing arbitrarily long lines (e.g. minified one-line files); underlying parse causes surface in the error message.
 - Regression case for `.ignore/.reglintignore` priority over `.gitignore` on conflicting paths.
 
 ### Mutation testing

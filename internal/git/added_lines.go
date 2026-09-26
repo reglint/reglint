@@ -1,7 +1,6 @@
 package git
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"regexp"
@@ -34,11 +33,11 @@ func SelectAddedLines(request CandidateSelectionRequest) (map[string]map[int]str
 	if err != nil {
 		switch mode {
 		case "staged":
-			return nil, errors.New("git mode staged failed to resolve added lines")
+			return nil, fmt.Errorf("git mode staged failed to resolve added lines: %w", err)
 		case "diff":
 			target := strings.TrimSpace(request.DiffTarget)
 
-			return nil, fmt.Errorf("git mode diff failed to resolve added lines for target %q", target)
+			return nil, fmt.Errorf("git mode diff failed to resolve added lines for target %q: %w", target, err)
 		default:
 			return nil, fmt.Errorf("git mode %s is not supported", mode)
 		}
@@ -92,16 +91,14 @@ func runAddedLinesCommand(request CandidateSelectionRequest, mode string) (strin
 func parseAddedLines(diffOutput string) (map[string]map[int]struct{}, error) {
 	state := addedLinesParseState{addedLinesByFile: make(map[string]map[int]struct{})}
 
-	scanner := bufio.NewScanner(strings.NewReader(diffOutput))
-	for scanner.Scan() {
-		line := strings.TrimSuffix(scanner.Text(), "\r")
+	// ponytail: diff output is already fully in memory, so split instead of
+	// bufio.Scanner — no per-line cap to trip on (Scanner's 64 KiB default
+	// killed diffs containing minified one-line files).
+	for _, rawLine := range strings.Split(diffOutput, "\n") {
+		line := strings.TrimSuffix(rawLine, "\r")
 		if err := state.consumeLine(line); err != nil {
 			return nil, err
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, err
 	}
 
 	return state.finalize(), nil
