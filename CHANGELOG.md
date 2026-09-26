@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-26
+
 ### Fixed
 
 - `--git-added-lines-only` no longer fails with `git mode diff failed to resolve added lines` when the diff contains a single line longer than 64 KiB (e.g. a committed minified JSON file). Parse errors now include the underlying cause instead of discarding it.
