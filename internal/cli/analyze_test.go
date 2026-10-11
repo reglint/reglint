@@ -140,6 +140,25 @@ func TestParseAnalyzeIncludeExclude(t *testing.T) {
 	}
 }
 
+func TestParseAnalyzeRepeatableRulesFlag(t *testing.T) {
+	t.Parallel()
+
+	configPath := writeTempConfig(t)
+
+	got, err := cli.ParseAnalyzeArgs([]string{
+		"--config", configPath,
+		"--rules", "a.yaml",
+		"--rules", "b.yaml",
+	})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if len(got.RuleFilePaths) != 2 || got.RuleFilePaths[0] != "a.yaml" || got.RuleFilePaths[1] != "b.yaml" {
+		t.Fatalf("unexpected rule file list: %v", got.RuleFilePaths)
+	}
+}
+
 func TestParseAnalyzeInvalidFormat(t *testing.T) {
 	t.Parallel()
 

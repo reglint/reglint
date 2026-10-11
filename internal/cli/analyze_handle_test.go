@@ -268,6 +268,62 @@ func TestHandleAnalyzeReturnsZeroWhenFailOnUnset(t *testing.T) {
 	}
 }
 
+func TestHandleAnalyzeLoadsRulesFromRuleFiles(t *testing.T) {
+	t.Parallel()
+	setAnalyzeCwd(t)
+
+	rootDir := t.TempDir()
+	writeFile(t, rootDir, "sample.txt", "token=abc")
+	writeFile(t, rootDir, "pack.yaml",
+		"rules:\n  - message: \"Found token\"\n    regex: \"token=\"\n    severity: \"warning\"\n")
+	configPath := filepath.Join(rootDir, "reglint.yaml")
+	if err := os.WriteFile(configPath, []byte("ruleFiles:\n  - pack.yaml\n"), 0o600); err != nil {
+		t.Fatalf("failed to write config: %v", err)
+	}
+
+	var output bytes.Buffer
+	code := HandleAnalyze([]string{
+		"--config", configPath,
+		"--format", "json",
+		rootDir,
+	}, &output)
+
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d, output: %s", code, output.String())
+	}
+	if !strings.Contains(output.String(), "Found token") {
+		t.Fatalf("expected pack rule match in output: %q", output.String())
+	}
+}
+
+func TestHandleAnalyzeRejectsSettingsInRuleFile(t *testing.T) {
+	t.Parallel()
+	setAnalyzeCwd(t)
+
+	rootDir := t.TempDir()
+	writeFile(t, rootDir, "sample.txt", "token=abc")
+	writeFile(t, rootDir, "bad.yaml", "rules:\n  - message: \"X\"\n    regex: \"x\"\nfailOn: error\n")
+	configPath := writeConfig(t, sampleConfig())
+
+	var output bytes.Buffer
+	code := HandleAnalyze([]string{
+		"--config", configPath,
+		"--rules", filepath.Join(rootDir, "bad.yaml"),
+		rootDir,
+	}, &output)
+
+	if code != 1 {
+		t.Fatalf("expected exit code 1, got %d, output: %s", code, output.String())
+	}
+	lines := strings.Split(strings.TrimRight(output.String(), "\n"), "\n")
+	if len(lines) != 1 {
+		t.Fatalf("expected single error line, got %d: %q", len(lines), output.String())
+	}
+	if !strings.Contains(lines[0], "failOn") {
+		t.Fatalf("expected error naming failOn, got %q", lines[0])
+	}
+}
+
 func TestHandleAnalyzeAcceptsShortFlags(t *testing.T) {
 	t.Parallel()
 	setAnalyzeCwd(t)

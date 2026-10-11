@@ -10,6 +10,7 @@ type RuleSet struct {
 	Concurrency          *int         `yaml:"concurrency,omitempty"`
 	Baseline             *string      `yaml:"baseline,omitempty"`
 	Git                  *GitSettings `yaml:"git,omitempty"`
+	RuleFiles            StringList   `yaml:"ruleFiles,omitempty"`
 	ConsoleColorsEnabled *bool        `yaml:"consoleColorsEnabled,omitempty"`
 	IgnoreFilesEnabled   *bool        `yaml:"ignoreFilesEnabled,omitempty"`
 	IgnoreFiles          StringList   `yaml:"ignoreFiles,omitempty"`

@@ -1,6 +1,6 @@
 # Rule Files
 
-Status: Draft
+Status: Implemented
 
 ## Overview
 
@@ -39,7 +39,7 @@ A rule file is a YAML document parsed as a RuleSet (see `specs/configuration.md`
 
 - `rules` is required and must be non-empty. Rules follow `specs/regex-rules.md`.
 - Every other RuleSet field must be absent. Presence of any of `include`, `exclude`, `failOn`, `concurrency`, `baseline`, `git`, `consoleColorsEnabled`, `ignoreFilesEnabled`, `ignoreFiles`, or `ruleFiles` is a validation error naming the offending field.
-- Unknown top-level keys already fail per existing RuleSet parsing behavior.
+- Any top-level key other than `rules` — known setting or unknown — is rejected; base config parsing is non-strict, so rule files enforce this explicitly.
 
 Example rule file (`rules-go.yaml`):
 
@@ -116,6 +116,7 @@ type CLIConfig struct {
 ## Validation
 
 - `ruleFiles` values must be non-empty strings without duplicates when set.
+- The base config may have an empty `rules` list when `ruleFiles` is non-empty.
 - Duplicate paths across `ruleFiles` and `--rules` (after resolution) are a validation error; loading the same file twice is never intentional.
 - A rule file that is missing, unreadable, or unparseable exits with code 1 and a single error message naming the file.
 - A rule file without a non-empty `rules` list exits with code 1.

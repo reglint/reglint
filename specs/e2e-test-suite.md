@@ -169,6 +169,9 @@ E2EAssertion
 - `E2E-FULL-013`: unreadable files record errors while scan continues.
 - `E2E-FULL-014`: ignore precedence is deterministic: `.reglintignore` > `.ignore` > `.gitignore`.
 - `E2E-FULL-015`: repeated runs over same fixture produce stable ordering.
+- `E2E-FULL-016`: config `ruleFiles` loads rules from separate files.
+- `E2E-FULL-017`: `--rules` flag loads rule files after config `ruleFiles`.
+- `E2E-FULL-018`: rule file containing settings exits with a single error naming the field.
 
 ## Security Considerations
 

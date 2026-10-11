@@ -592,6 +592,52 @@ func TestE2EFull015RepeatedRunsProduceStableOrdering(t *testing.T) {
 	}
 }
 
+func TestE2EFull016ConfigRuleFilesLoadRulesFromSeparateFiles(t *testing.T) {
+	harness := newE2EHarness(t)
+
+	fixtureDir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(fixtureDir, "src"), 0o755); err != nil {
+		t.Fatalf("create src dir: %v", err)
+	}
+	writeFixture(t, fixtureDir, filepath.Join("src", "sample.txt"), "token=abc\n")
+	writeFixture(t, fixtureDir, "reglint.yaml", "ruleFiles:\n  - pack.yaml\n")
+	writeFixture(t, fixtureDir, "pack.yaml",
+		"rules:\n  - message: \"Found token\"\n    regex: \"token=\"\n    severity: \"warning\"\n")
+
+	scenario := newE2EFull016Scenario(fixtureDir)
+	result := harness.mustRunScenario(t, scenario)
+	harness.assertScenarioStderrEmpty(t, scenario, result)
+}
+
+func TestE2EFull017RulesFlagLoadsRuleFilesAfterConfigRules(t *testing.T) {
+	harness := newE2EHarness(t)
+
+	fixtureDir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(fixtureDir, "src"), 0o755); err != nil {
+		t.Fatalf("create src dir: %v", err)
+	}
+	writeFixture(t, fixtureDir, filepath.Join("src", "sample.txt"), "alpha=1\nbeta=2\n")
+	writeFixture(t, fixtureDir, "reglint.yaml", "rules:\n  - message: \"Alpha\"\n    regex: \"alpha=\"\n")
+	writeFixture(t, fixtureDir, "pack.yaml", "rules:\n  - message: \"Beta\"\n    regex: \"beta=\"\n")
+
+	scenario := newE2EFull017Scenario(fixtureDir)
+	result := harness.mustRunScenario(t, scenario)
+	harness.assertScenarioStderrEmpty(t, scenario, result)
+}
+
+func TestE2EFull018RuleFileWithSettingsExitsWithSingleError(t *testing.T) {
+	harness := newE2EHarness(t)
+
+	fixtureDir := t.TempDir()
+	writeFixture(t, fixtureDir, "sample.txt", "token=abc\n")
+	writeFixture(t, fixtureDir, "reglint.yaml", "rules:\n  - message: \"Found token\"\n    regex: \"token=\"\n")
+	writeFixture(t, fixtureDir, "bad.yaml", "rules:\n  - message: \"X\"\n    regex: \"x\"\nfailOn: error\n")
+
+	scenario := newE2EFull018Scenario(fixtureDir)
+	result := harness.mustRunScenario(t, scenario)
+	harness.assertScenarioStderrEmpty(t, scenario, result)
+}
+
 func extractMatchOrderFromJSON(t *testing.T, payload string) []string {
 	t.Helper()
 
