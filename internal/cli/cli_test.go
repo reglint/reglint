@@ -45,6 +45,7 @@ func TestRunShowsHelpForRootFlag(t *testing.T) {
 		"Commands:\n" +
 		"  analyze (alias: analyse)\n" +
 		"  init\n" +
+		"  validate\n" +
 		"  version\n" +
 		"\n" +
 		"Flags:\n" +

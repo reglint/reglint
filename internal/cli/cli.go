@@ -57,7 +57,7 @@ func isHelpArg(arg string) bool {
 }
 
 func isHelpRequest(command string, args []string) bool {
-	if command != "analyze" && command != "init" && command != "version" {
+	if command != "analyze" && command != "init" && command != "validate" && command != "version" {
 		return false
 	}
 	for _, arg := range args {

@@ -206,6 +206,62 @@ func TestE2EHarnessScenarioOrderingByTierThenID(t *testing.T) {
 	}
 }
 
+func TestE2ESmoke100ValidateValidConfigExitsZero(t *testing.T) {
+	harness := newE2EHarness(t)
+
+	workspace := t.TempDir()
+	configPath := filepath.Join(workspace, "rules.yaml")
+	validConfig := "" +
+		"rules:\n" +
+		"  - message: \"first\"\n" +
+		"    regex: \"alpha\"\n" +
+		"  - message: \"second\"\n" +
+		"    regex: \"beta\"\n"
+	if err := os.WriteFile(configPath, []byte(validConfig), 0o600); err != nil {
+		t.Fatalf("write config fixture: %v", err)
+	}
+
+	scenario := e2EScenario{
+		ID:           "E2E-SMOKE-100",
+		Tier:         "smoke",
+		Name:         "validate reports a valid config",
+		Fixture:      workspace,
+		Command:      []string{"validate", "-c", configPath},
+		ExpectedExit: 0,
+	}
+
+	result := harness.mustRunScenario(t, scenario)
+	harness.assertScenarioStdoutContains(t, scenario, result, "Config OK: "+configPath+" (2 rules)")
+	harness.assertScenarioStderrEmpty(t, scenario, result)
+}
+
+func TestE2ESmoke101ValidateInvalidRegexExitsOne(t *testing.T) {
+	harness := newE2EHarness(t)
+
+	workspace := t.TempDir()
+	configPath := filepath.Join(workspace, "rules.yaml")
+	invalidConfig := "" +
+		"rules:\n" +
+		"  - message: \"broken\"\n" +
+		"    regex: \"[\"\n"
+	if err := os.WriteFile(configPath, []byte(invalidConfig), 0o600); err != nil {
+		t.Fatalf("write config fixture: %v", err)
+	}
+
+	scenario := e2EScenario{
+		ID:           "E2E-SMOKE-101",
+		Tier:         "smoke",
+		Name:         "validate reports an invalid regex",
+		Fixture:      workspace,
+		Command:      []string{"validate", "-c", configPath},
+		ExpectedExit: 1,
+	}
+
+	result := harness.mustRunScenario(t, scenario)
+	harness.assertScenarioStdoutContains(t, scenario, result, "regex is invalid")
+	harness.assertScenarioStderrEmpty(t, scenario, result)
+}
+
 func TestE2ESmoke001AnalyzeHappyPathDeterministicSummary(t *testing.T) {
 	harness := newE2EHarness(t)
 

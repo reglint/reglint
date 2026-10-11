@@ -33,6 +33,8 @@ func getHelpTopic(name string) (HelpTopic, bool) {
 		return analyzeHelpTopic(), true
 	case "init":
 		return initHelpTopic(), true
+	case "validate":
+		return validateHelpTopic(), true
 	case "version":
 		return versionHelpTopic(), true
 	default:
@@ -87,6 +89,7 @@ func rootCommands() []string {
 	return []string{
 		"analyze (alias: analyse)",
 		"init",
+		"validate",
 		"version",
 	}
 }
@@ -278,6 +281,29 @@ func versionHelpTopic() HelpTopic {
 		Usage: []string{"reglint version"},
 		Flags: []HelpFlag{
 			helpFlag(),
+		},
+	}
+}
+
+func validateHelpTopic() HelpTopic {
+	return HelpTopic{
+		Name:  "validate",
+		Usage: []string{"reglint validate [flags]"},
+		Flags: []HelpFlag{
+			helpFlag(),
+			{
+				Short:       "-c",
+				Long:        "--config",
+				Type:        "string",
+				Default:     defaultConfigPath,
+				Description: "Path to YAML rules config file.",
+			},
+			{
+				Long:        "--rules",
+				Type:        "string",
+				Default:     "none",
+				Description: "Repeatable rule file path loaded after config ruleFiles.",
+			},
 		},
 	}
 }

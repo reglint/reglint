@@ -99,6 +99,20 @@ func TestRunShowsAnalyseHelpForShortFlag(t *testing.T) {
 	}
 }
 
+func TestRunShowsValidateHelpForLongFlag(t *testing.T) {
+	t.Parallel()
+
+	var output bytes.Buffer
+	code := run([]string{"validate", "--help"}, &output)
+
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d", code)
+	}
+	if output.String() != expectedValidateHelpOutput() {
+		t.Fatalf("unexpected validate help output: %q", output.String())
+	}
+}
+
 func TestRunUnknownCommandWithHelpFlag(t *testing.T) {
 	t.Parallel()
 
@@ -166,6 +180,25 @@ func TestRunRoutesInit(t *testing.T) {
 	}
 	if !strings.Contains(contents, "Avoid hardcoded token") {
 		t.Fatalf("expected default rule, got %q", contents)
+	}
+}
+
+func TestRunRoutesValidate(t *testing.T) {
+	t.Parallel()
+
+	configPath := filepath.Join(t.TempDir(), "rules.yaml")
+	if err := os.WriteFile(configPath, []byte("rules:\n  - message: \"ok\"\n    regex: \"fine\"\n"), 0o600); err != nil {
+		t.Fatalf("write config: %v", err)
+	}
+
+	var output bytes.Buffer
+	code := run([]string{"validate", "-c", configPath}, &output)
+
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d, output: %q", code, output.String())
+	}
+	if !strings.Contains(output.String(), "Config OK: "+configPath) {
+		t.Fatalf("unexpected output: %q", output.String())
 	}
 }
 
@@ -1698,6 +1731,7 @@ func expectedRootHelpOutput() string {
 		"Commands:\n" +
 		"  analyze (alias: analyse)\n" +
 		"  init\n" +
+		"  validate\n" +
 		"  version\n" +
 		"\n" +
 		"Flags:\n" +
@@ -1727,4 +1761,14 @@ func expectedAnalyzeHelpOutput() string {
 		"      --git-added-lines-only bool (default false)  Restrict matches to added lines in Git mode.\n" +
 		"      --no-gitignore bool (default false)  Disable .gitignore filtering for this run.\n" +
 		"      --no-ignore-files bool (default false)  Disable ignore file loading and matching.\n"
+}
+
+func expectedValidateHelpOutput() string {
+	return "Usage:\n" +
+		"  reglint validate [flags]\n" +
+		"\n" +
+		"Flags:\n" +
+		"  -h, --help bool (default false)  Print help and exit.\n" +
+		"  -c, --config string (default reglint-rules.yaml)  Path to YAML rules config file.\n" +
+		"      --rules string (default none)  Repeatable rule file path loaded after config ruleFiles.\n"
 }
