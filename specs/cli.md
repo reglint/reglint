@@ -83,7 +83,8 @@ CLICommand
 1. Parse args and select a subcommand.
 2. If the command is `analyze` or `analyse`, run analyze handler.
 3. If the command is `init`, run init handler.
-4. If no command is provided, print help and exit 1.
+4. If the command is `validate`, run validate handler.
+5. If no command is provided, print help and exit 1.
 
 ### Validation and errors
 
@@ -117,12 +118,13 @@ reglint <command> [flags]
 Commands:
   analyze (alias: analyse)
   init
+  validate
   version
 ```
 
 ### Flags
 
-- See `specs/cli-analyze.md` and `specs/cli-init.md`.
+- See `specs/cli-analyze.md`, `specs/cli-init.md`, and `specs/cli-validate.md`.
 
 ### Precedence
 

@@ -30,6 +30,7 @@ Design docs and technical specifications
 - [Analyze command](specs/cli-analyze.md)
 - [Analyze baseline support](specs/cli-analyze-baseline.md)
 - [Init command](specs/cli-init.md)
+- [Validate command](specs/cli-validate.md)
 
 ### Formatters
 
