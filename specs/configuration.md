@@ -35,6 +35,7 @@ RuleSet
   - `ignoreFilesEnabled` (bool, optional): Enable ignore file processing. Runtime behavior is defined in `specs/ignore-files.md`.
   - `ignoreFiles` (list of string, optional): Ordered ignore file names to evaluate. Runtime behavior is defined in `specs/ignore-files.md`.
   - `git` (GitSettings, optional): Optional Git integration settings for scoped scans.
+  - `ruleFiles` (list of string, optional): Ordered rule file paths loaded after this file's `rules`. Paths resolve relative to this config file's directory. Merge and validation semantics are defined in `specs/rule-files.md`.
 
 GitSettings
 
@@ -66,6 +67,9 @@ git:
   diff: "HEAD~1..HEAD"
   addedLinesOnly: false
   gitignoreEnabled: true
+ruleFiles:
+  - "rules-go.yaml"
+  - "rules-security.yaml"
 rules:
   - message: "This is an error message"
     regex: "regex1"
@@ -111,6 +115,7 @@ rules:
 - `git.mode=diff` requires `git.diff`.
 - `git.addedLinesOnly=true` is valid only when `git.mode=staged|diff`.
 - `git.gitignoreEnabled` must be a boolean when set.
+- `ruleFiles` values must be non-empty strings without duplicates when set; referenced files must be valid rule files per `specs/rule-files.md`.
 - Rules are validated per `specs/regex-rules.md`.
 
 ## Notes
