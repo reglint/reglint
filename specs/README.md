@@ -15,6 +15,7 @@ Design docs and technical specifications
 
 - [Configuration](specs/configuration.md)
 - [Regex Rules](specs/regex-rules.md)
+- [Rule Files](specs/rule-files.md)
 - [Ignore Files Support](specs/ignore-files.md)
 - [Testing and Validations](specs/testing-and-validations.md)
 - [End-to-End Test Suite](specs/e2e-test-suite.md)

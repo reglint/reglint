@@ -20,6 +20,7 @@ Status: Implemented
 - Support optional baseline suppression using file/message count comparison.
 - Support generating/regenerating baseline files from current findings.
 - Support optional Git-scoped selection (`staged`, `diff`, `added lines`).
+- Support repeatable `--rules` rule file loading per `specs/rule-files.md`.
 
 ### Non-Goals
 
@@ -152,6 +153,7 @@ type CLIConfig struct {
 ### Validation and errors
 
 - `--config` (`-c`) defaults to `reglint-rules.yaml` in the current directory. If the file is missing or unreadable, print an error and exit with code 1.
+- `--rules` values load after base config `ruleFiles`, resolve relative to the working directory, and must be valid rule files per `specs/rule-files.md`; any rule file failure exits with code 1.
 - `--format` (`-f`) must include only `console`, `json`, `sarif`, or `github`.
 - `--concurrency` must be a positive integer.
 - `--max-file-size` must be a positive integer.
@@ -196,6 +198,7 @@ reglint analyse [flags] [path ...]
 | Flag                     | Type   | Required | Default              | Purpose                                       |
 | ------------------------ | ------ | -------- | -------------------- | --------------------------------------------- |
 | `--config,-c`            | string | no       | `reglint-rules.yaml` | Path to YAML rules config file.               |
+| `--rules`                | string | no       | none                 | Repeatable rule file path, loaded after config `ruleFiles` (see `specs/rule-files.md`). |
 | `--format,-f`            | string | no       | `console`            | Comma-separated list of `console,json,sarif,github`. |
 | `--out-json`             | string | no       | none                 | Output path for JSON results.                 |
 | `--out-sarif`            | string | no       | none                 | Output path for SARIF results.                |
@@ -214,6 +217,7 @@ reglint analyse [flags] [path ...]
 
 ### Precedence
 
+- Rules load in order: base config `rules`, then `ruleFiles` entries in declared order, then `--rules` values in flag order (`specs/rule-files.md`).
 - If `--include` is provided, it replaces the RuleSet `include` list from `specs/configuration.md`.
 - If `--exclude` is provided, it replaces the RuleSet `exclude` list from `specs/configuration.md`.
 - If `--include` is not provided, use RuleSet `include` or default to `**/*`.
