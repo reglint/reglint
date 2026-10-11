@@ -102,7 +102,7 @@ rules:
 ## Validation
 
 - YAML must parse successfully.
-- `rules` is required.
+- `rules` is required unless `ruleFiles` is non-empty.
 - `failOn` must be one of the allowed values when set.
 - `concurrency` must be a positive integer when set.
 - `baseline` must be a non-empty string when set.

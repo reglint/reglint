@@ -703,6 +703,61 @@ func newE2EFull015Scenario(moduleRoot, fixturePath string) e2EScenario {
 	}
 }
 
+func newE2EFull016Scenario(fixturePath string) e2EScenario {
+	configPath := filepath.Join(fixturePath, "reglint.yaml")
+
+	return e2EScenario{
+		ID:           "E2E-FULL-016",
+		Tier:         "full",
+		Name:         "config ruleFiles loads rules from separate files",
+		Fixture:      fixturePath,
+		Command:      []string{"analyze", "--config", configPath, "--format", "json", "src"},
+		ExpectedExit: 0,
+		Assertions: []e2EAssertion{
+			{Type: e2EAssertionJSONFieldEquals, Field: "schemaVersion", Expected: 1},
+			{Type: e2EAssertionJSONFieldEquals, Field: "stats.filesScanned", Expected: 1},
+			{Type: e2EAssertionJSONFieldEquals, Field: "stats.matches", Expected: 1},
+		},
+	}
+}
+
+func newE2EFull017Scenario(fixturePath string) e2EScenario {
+	configPath := filepath.Join(fixturePath, "reglint.yaml")
+	packPath := filepath.Join(fixturePath, "pack.yaml")
+
+	return e2EScenario{
+		ID:           "E2E-FULL-017",
+		Tier:         "full",
+		Name:         "--rules flag loads rule files after config rules",
+		Fixture:      fixturePath,
+		Command:      []string{"analyze", "--config", configPath, "--rules", packPath, "--format", "json", "src"},
+		ExpectedExit: 0,
+		Assertions: []e2EAssertion{
+			{Type: e2EAssertionJSONFieldEquals, Field: "schemaVersion", Expected: 1},
+			{Type: e2EAssertionJSONFieldEquals, Field: "stats.matches", Expected: 2},
+			{Type: e2EAssertionJSONFieldEquals, Field: "matches.0.message", Expected: "Alpha"},
+			{Type: e2EAssertionJSONFieldEquals, Field: "matches.1.message", Expected: "Beta"},
+		},
+	}
+}
+
+func newE2EFull018Scenario(fixturePath string) e2EScenario {
+	configPath := filepath.Join(fixturePath, "reglint.yaml")
+	badPath := filepath.Join(fixturePath, "bad.yaml")
+
+	return e2EScenario{
+		ID:           "E2E-FULL-018",
+		Tier:         "full",
+		Name:         "rule file with settings exits with single error",
+		Fixture:      fixturePath,
+		Command:      []string{"analyze", "--config", configPath, "--rules", badPath, "."},
+		ExpectedExit: 1,
+		Assertions: []e2EAssertion{
+			{Type: e2EAssertionStdoutRegex, Value: `^rule file .*only "rules" is allowed in rule files, found "failOn"\n?$`},
+		},
+	}
+}
+
 func assertRegexMatch(value, pattern, streamName string) error {
 	if pattern == "" {
 		return fmt.Errorf("%s regex pattern is required", streamName)

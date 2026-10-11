@@ -71,6 +71,43 @@ func validateOptionalStringField(data []byte, fieldName string) error {
 	return nil
 }
 
+func validateRequiredRules(ruleSet RuleSet) error {
+	if len(ruleSet.Rules) == 0 && len(ruleSet.RuleFiles) == 0 {
+		return fmt.Errorf("rules must be a non-empty list")
+	}
+
+	return nil
+}
+
+func validateRuleFilesEntries(entries StringList) error {
+	seen := make(map[string]struct{}, len(entries))
+	for _, entry := range entries {
+		if strings.TrimSpace(entry) == "" {
+			return fmt.Errorf("ruleFiles entries must be non-empty strings")
+		}
+		if _, ok := seen[entry]; ok {
+			return fmt.Errorf("duplicate ruleFiles entry: %s", entry)
+		}
+		seen[entry] = struct{}{}
+	}
+
+	return nil
+}
+
+func validateRuleSetSettings(ruleSet RuleSet) error {
+	if ruleSet.FailOn != nil && !isValidSeverity(*ruleSet.FailOn) {
+		return fmt.Errorf("invalid failOn value: %s", *ruleSet.FailOn)
+	}
+	if ruleSet.Concurrency != nil && *ruleSet.Concurrency <= 0 {
+		return fmt.Errorf("concurrency must be positive")
+	}
+	if ruleSet.Baseline != nil && strings.TrimSpace(*ruleSet.Baseline) == "" {
+		return fmt.Errorf("baseline must be a non-empty string")
+	}
+
+	return nil
+}
+
 func validateRuleSet(ruleSet RuleSet) error {
 	if err := validateRuleSetFields(ruleSet); err != nil {
 		return err
@@ -80,17 +117,14 @@ func validateRuleSet(ruleSet RuleSet) error {
 }
 
 func validateRuleSetFields(ruleSet RuleSet) error {
-	if len(ruleSet.Rules) == 0 {
-		return fmt.Errorf("rules must be a non-empty list")
+	if err := validateRequiredRules(ruleSet); err != nil {
+		return err
 	}
-	if ruleSet.FailOn != nil && !isValidSeverity(*ruleSet.FailOn) {
-		return fmt.Errorf("invalid failOn value: %s", *ruleSet.FailOn)
+	if err := validateRuleFilesEntries(ruleSet.RuleFiles); err != nil {
+		return err
 	}
-	if ruleSet.Concurrency != nil && *ruleSet.Concurrency <= 0 {
-		return fmt.Errorf("concurrency must be positive")
-	}
-	if ruleSet.Baseline != nil && strings.TrimSpace(*ruleSet.Baseline) == "" {
-		return fmt.Errorf("baseline must be a non-empty string")
+	if err := validateRuleSetSettings(ruleSet); err != nil {
+		return err
 	}
 	if err := validateGitSettings(ruleSet.Git); err != nil {
 		return err

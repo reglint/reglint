@@ -34,6 +34,7 @@ const (
 // Config holds parsed analyze command inputs.
 type Config struct {
 	ConfigPath            string
+	RuleFilePaths         []string
 	Roots                 []string
 	Formats               []string
 	OutJSON               string
@@ -93,6 +94,19 @@ func HandleAnalyze(args []string, out *bytes.Buffer) int {
 	return exitCodeForFailOn(result.Matches, failOn)
 }
 
+// registerRepeatableListFlags registers the repeatable list flags and returns
+// their value pointers; read the pointers only after flagSet.Parse.
+func registerRepeatableListFlags(flagSet *flag.FlagSet) (include, exclude, ruleFiles *stringSlice) {
+	include = &stringSlice{}
+	flagSet.Var(include, "include", "Repeatable include glob.")
+	exclude = &stringSlice{}
+	flagSet.Var(exclude, "exclude", "Repeatable exclude glob.")
+	ruleFiles = &stringSlice{}
+	flagSet.Var(ruleFiles, "rules", "Repeatable rule file path loaded after config ruleFiles.")
+
+	return include, exclude, ruleFiles
+}
+
 // ParseAnalyzeArgs parses analyze command arguments into a Config.
 func ParseAnalyzeArgs(args []string) (Config, error) {
 	var cfg Config
@@ -106,10 +120,7 @@ func ParseAnalyzeArgs(args []string) (Config, error) {
 	formatShort := flagSet.String("f", defaultFormat, "Comma-separated list of formats.")
 	flagSet.StringVar(&cfg.OutJSON, "out-json", "", "Output path for JSON results.")
 	flagSet.StringVar(&cfg.OutSARIF, "out-sarif", "", "Output path for SARIF results.")
-	var include stringSlice
-	var exclude stringSlice
-	flagSet.Var(&include, "include", "Repeatable include glob.")
-	flagSet.Var(&exclude, "exclude", "Repeatable exclude glob.")
+	var include, exclude, ruleFiles = registerRepeatableListFlags(flagSet)
 	flagSet.IntVar(&cfg.Concurrency, "concurrency", runtime.GOMAXPROCS(0), "Worker count.")
 	flagSet.Int64Var(&cfg.MaxFileSizeBytes, "max-file-size", defaultMaxFileBytes, "Maximum file size in bytes.")
 	flagSet.StringVar(&cfg.FailOnSeverity, "fail-on", "", "Fail if matches at or above severity.")
@@ -125,8 +136,9 @@ func ParseAnalyzeArgs(args []string) (Config, error) {
 		return Config{}, err
 	}
 
-	cfg.Include = include
-	cfg.Exclude = exclude
+	cfg.Include = *include
+	cfg.Exclude = *exclude
+	cfg.RuleFilePaths = *ruleFiles
 	cfg.GitMode = strings.TrimSpace(cfg.GitMode)
 	cfg.GitDiffTarget = strings.TrimSpace(cfg.GitDiffTarget)
 	applyAnalyzeFlagPresence(flagSet, &cfg)
@@ -409,7 +421,7 @@ func runAnalyze(
 		return scan.Result{}, "", nil, nil, Config{}, output.ConsoleColorSettings{}, err
 	}
 
-	ruleSet, err := config.LoadRuleSet(cfg.ConfigPath)
+	ruleSet, err := config.LoadRuleSetWithFiles(cfg.ConfigPath, cfg.RuleFilePaths)
 	if err != nil {
 		return scan.Result{}, "", nil, nil, Config{}, output.ConsoleColorSettings{}, err
 	}

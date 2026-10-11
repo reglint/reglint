@@ -105,6 +105,7 @@ Reference struct (Go):
 ```go
 type CLIConfig struct {
     ConfigPath       string
+    RuleFilePaths    []string
     Roots            []string
     Formats          []string
     OutJSON          string
