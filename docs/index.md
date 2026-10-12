@@ -33,14 +33,33 @@ RegLint validates its own codebase in CI with the same rule schema — the repos
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "RegLint",
-  "applicationCategory": "DeveloperApplication",
-  "operatingSystem": "Linux, macOS, Windows",
-  "url": "https://reglint.iyaki.ar",
-  "description": "Regex-based static analysis tool: write linter rules as plain YAML, scan any codebase with a single static Go binary, and report findings as console output, JSON, SARIF, or GitHub Actions PR annotations.",
-  "license": "https://github.com/reglint/reglint/blob/main/LICENSE",
-  "author": { "@type": "Organization", "name": "reglint" },
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "RegLint",
+      "url": "https://reglint.iyaki.ar"
+    },
+    {
+      "@type": "Organization",
+      "name": "reglint",
+      "url": "https://github.com/reglint",
+      "sameAs": [
+        "https://github.com/reglint/reglint",
+        "https://github.com/reglint/reglint-action",
+        "https://github.com/reglint/homebrew-tap"
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "RegLint",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Linux, macOS, Windows",
+      "url": "https://reglint.iyaki.ar",
+      "description": "Regex-based static analysis tool: write linter rules as plain YAML, scan any codebase with a single static Go binary, and report findings as console output, JSON, SARIF, or GitHub Actions PR annotations.",
+      "license": "https://github.com/reglint/reglint/blob/main/LICENSE",
+      "author": { "@type": "Organization", "name": "reglint" },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+  ]
 }
 </script>
