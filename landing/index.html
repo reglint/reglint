@@ -14,7 +14,11 @@
 <meta property="og:title" content="RegLint — Your own linter, defined in YAML regex">
 <meta property="og:description" content="Write your own linter rules in plain YAML. Scan any codebase with a single static binary. Enforce in CI with GitHub annotations, SARIF, and exit-code gates.">
 <meta property="og:url" content="https://reglint.iyaki.ar/">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://reglint.iyaki.ar/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://reglint.iyaki.ar/og.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -40,6 +44,7 @@
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Linux, macOS, Windows",
       "url": "https://reglint.iyaki.ar",
+      "image": "https://reglint.iyaki.ar/og.png",
       "description": "Regex-based static analysis tool: write linter rules as plain YAML, scan any codebase with a single static Go binary, and report findings as console output, JSON, SARIF, or GitHub Actions PR annotations.",
       "license": "https://github.com/reglint/reglint/blob/main/LICENSE",
       "author": { "@type": "Organization", "name": "reglint" },
@@ -118,7 +123,7 @@
   .install .cmd .tag { color: var(--muted); font-family: inherit; font-size: 12px; min-width: 58px; }
   .copy {
     background: none; border: 1px solid var(--border); color: var(--muted);
-    border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
+    border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer;
   }
   .copy:hover { color: var(--fg); border-color: var(--accent); }
 

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0b0e14"/>
+  <rect width="1200" height="6" fill="#4051b5"/>
+  <text x="80" y="140" font-family="monospace" font-size="36" fill="#7c93ff">reglint</text>
+  <text x="80" y="280" font-family="sans-serif" font-size="74" font-weight="bold" fill="#e6e9f0">Your own linter,</text>
+  <text x="80" y="374" font-family="sans-serif" font-size="74" font-weight="bold" fill="#e6e9f0">defined in <tspan fill="#7c93ff">YAML regex</tspan>.</text>
+  <text x="80" y="456" font-family="sans-serif" font-size="30" fill="#9aa4b8">Plain YAML rules · single static binary · native CI gates</text>
+  <text x="80" y="548" font-family="monospace" font-size="26" fill="#9aa4b8">$ brew install reglint/tap/reglint</text>
+</svg>
