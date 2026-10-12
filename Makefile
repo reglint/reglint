@@ -2,7 +2,7 @@
 
 
 .PHONY: help quality all format lint test coverage test-coverage test-race test-flaky test-e2e-smoke test-e2e mutation test-mutation \
-	security arch scan build run analyze-example analyze-fail release-check release-snapshot
+	security arch scan build build-debug run analyze-example analyze-fail release-check release-snapshot
 
 GLOBAL_TARGETS ?=
 BUILD_OUT ?= bin/reglint
@@ -26,6 +26,7 @@ help:
 	"  make arch            Run go-arch-lint" \
 	"  make scan            Run RegLint self-scan with repository rules" \
 	"  make build           Build CLI binary to $(BUILD_OUT)" \
+	"  make build-debug     Build unstripped binary to $(BUILD_OUT)-debug (for delve)" \
 	"  make run ARGS='...'  Run CLI from source" \
 	"  make analyze-example Analyze test fixtures with example config" \
 	"  make analyze-fail    Analyze test fixtures with failOn config" \
@@ -89,7 +90,10 @@ release-snapshot:
 	goreleaser release --snapshot --clean
 
 build:
-	go build -o $(BUILD_OUT) ./cmd/reglint
+	CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o $(BUILD_OUT) ./cmd/reglint
+
+build-debug:
+	go build -o $(BUILD_OUT)-debug ./cmd/reglint
 
 run:
 	go run ./cmd/reglint $(ARGS)
