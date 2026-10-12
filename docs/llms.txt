@@ -6,6 +6,7 @@ RegLint is free, open source (MIT), and language-agnostic: the same rule scans G
 
 ## Docs
 
+- [AI Agents & CI/CD](https://reglint.iyaki.ar/agents/): why RegLint fits AI coding agents and pipelines — deterministic YAML rules, staged/diff scans, baselines, native annotations
 - [Install](https://reglint.iyaki.ar/install/): every install channel, plus the reglint-action for GitHub Actions
 - [Quickstart](https://reglint.iyaki.ar/quickstart/): first scan in two commands with a starter rules file
 - [Configuration](https://reglint.iyaki.ar/configuration/): full reglint-rules.yaml reference — fields, defaults, rule schema, rule files, ignore files, git settings

@@ -11,7 +11,7 @@ description: Regex-based static analysis with rules in plain YAML — scan any c
 - **CI-native** — `github` output format emits PR annotations; SARIF uploads to GitHub code scanning.
 - **Fast and dependency-free** — a single static Go binary with parallel scans, `.gitignore` support, baseline mode, and staged/diff scoping.
 
-[:material-download: Install](install.md){ .md-button } [:material-flag: Quickstart](quickstart.md){ .md-button }
+[:material-download: Install](install.md){ .md-button } [:material-flag: Quickstart](quickstart.md){ .md-button } [:material-robot: For AI agents & CI/CD](agents.md){ .md-button }
 
 ## Why RegLint?
 
