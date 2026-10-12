@@ -35,7 +35,9 @@ jobs:
       - name: Build site
         run: mkdocs build --strict
       - name: Add landing page
-        run: cp landing/index.html site/index.html
+        run: cp landing/index.html landing/og.png site/
+      - name: Add landing page to sitemap
+        run: python3 -c "import pathlib; p = pathlib.Path('site/sitemap.xml'); s = p.read_text(); p.write_text(s.replace('</urlset>', '<url><loc>https://reglint.iyaki.ar/</loc></url></urlset>'))"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
