@@ -57,4 +57,6 @@ Full workflows in [CI Recipes](ci.md).
 
 The [setup skill](https://github.com/reglint/reglint/blob/main/skills/reglint-setup/SKILL.md) does the whole flow: detects your stack, authors a starter `reglint-rules.yaml` from your repo's own conventions, and generates the CI workflow and/or pre-commit hook. Point your coding agent at it — instructions in [Install → AI agent](install.md#install-with-an-ai-agent).
 
+The [learn skill](https://github.com/reglint/reglint/blob/main/skills/reglint-learn/SKILL.md) closes the loop after that: when the agent fixes a bug, it distills the root cause into a new rule — regex-ability check, incident comment, repro that proves the rule fires, noise/baseline decision — committed alongside the fix.
+
 Next: [Install](install.md) · [Quickstart](quickstart.md) · [CLI Reference](cli.md)

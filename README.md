@@ -89,6 +89,8 @@ Give your agent this instruction:
 
 The skill is plain markdown — read or review it at [`skills/reglint-setup/SKILL.md`](skills/reglint-setup/SKILL.md).
 
+Once installed, give your agent the follow-up skill so it *learns* from bugs: after fixing a mistake, [`skills/reglint-learn/SKILL.md`](skills/reglint-learn/SKILL.md) has it distill the root cause into a new `reglint-rules.yaml` entry — proven against the original offending snippet — so the same error can't ship again.
+
 ## Quickstart
 
 Create a starter rules file, then run a scan:
