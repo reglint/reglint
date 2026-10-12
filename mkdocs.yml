@@ -1,0 +1,33 @@
+site_name: RegLint
+site_url: https://reglint.iyaki.ar
+repo_url: https://github.com/reglint/reglint
+repo_name: reglint/reglint
+strict: true
+plugins:
+  - search
+  - social
+  - git-revision-date-localized
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.top
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Install: install.md
+  - Quickstart: quickstart.md
+  - Configuration: configuration.md
+  - CLI Reference: cli.md
+  - Output Formats: output-formats.md
+  - Git-Scoped Scans: git-scans.md
+  - Baseline Workflow: baseline.md
+  - CI Recipes: ci.md
+  - FAQ: faq.md

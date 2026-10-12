@@ -1,0 +1,17 @@
+# RegLint
+
+> RegLint is a regex-based static analysis tool for source repositories: write linter rules as plain YAML (message, RE2 regex, severity), scan any codebase with a single static Go binary, and report findings as console output, JSON, SARIF, or native GitHub Actions PR annotations.
+
+RegLint is free, open source (MIT), and language-agnostic: the same rule scans Go, TypeScript, Terraform, and plain config files. Install via Homebrew (`brew install reglint/tap/reglint`), a checksum-verified one-line curl script, `go install github.com/reglint/reglint/cmd/reglint@latest`, or prebuilt binaries. Source code: https://github.com/reglint/reglint
+
+## Docs
+
+- [Install](https://reglint.iyaki.ar/install/): every install channel, plus the reglint-action for GitHub Actions
+- [Quickstart](https://reglint.iyaki.ar/quickstart/): first scan in two commands with a starter rules file
+- [Configuration](https://reglint.iyaki.ar/configuration/): full reglint-rules.yaml reference — fields, defaults, rule schema, rule files, ignore files, git settings
+- [CLI Reference](https://reglint.iyaki.ar/cli/): analyze, init, validate, and version — every flag, default, and exit code
+- [Output Formats](https://reglint.iyaki.ar/output-formats/): console, JSON, SARIF, and GitHub Actions annotations
+- [Git-Scoped Scans](https://reglint.iyaki.ar/git-scans/): staged and diff modes, added-lines-only reporting, ignore-file behavior
+- [Baseline Workflow](https://reglint.iyaki.ar/baseline/): suppress known findings, adopt RegLint on legacy codebases
+- [CI Recipes](https://reglint.iyaki.ar/ci/): SARIF upload to code scanning, PR annotations, reglint-action workflows
+- [FAQ](https://reglint.iyaki.ar/faq/): secrets detection, SARIF support, ignoring vendored files, legacy adoption
