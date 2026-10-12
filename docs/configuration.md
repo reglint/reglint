@@ -108,6 +108,53 @@ rules:
       - "**/*_test.go"
 ```
 
+### Rule pack example: regex hygiene
+
+Rules match any line text, including the source text of other regexes — so a rule pack can flag patterns with shorter RE2 equivalents:
+
+```yaml
+rules:
+  - message: 'use \d instead of [0-9] - equivalent in RE2 and shorter'
+    regex: '\[0-9\]'
+    severity: info
+  - message: 'use \w instead of [a-zA-Z0-9_] - equivalent in RE2 and shorter'
+    regex: '\[a-zA-Z0-9_\]'
+    severity: info
+  - message: 'use \w instead of [A-Za-z0-9_] - equivalent in RE2 and shorter'
+    regex: '\[A-Za-z0-9_\]'
+    severity: info
+
+  - message: 'prefer \s over [ \t] - RE2 \s also matches \r and \f'
+    regex: '\[ \\t\][+*]?'
+    severity: info
+
+  - message: 'quantifier {0,1} is redundant - use ? instead'
+    regex: '\{0,1\}'
+    severity: info
+  - message: 'quantifier {1} is redundant - drop it'
+    regex: '\{1\}'
+    severity: info
+```
+
+Attach it to any config:
+
+```bash
+reglint analyze -c reglint-rules.yaml --rules regex-hygiene.yaml
+```
+
+To lint your own config and rule files, point the base config's `include` at them — include/exclude always come from the base config, never from `--rules` packs:
+
+```yaml
+# reglint-meta.yaml
+include:
+  - "reglint-rules.yaml"
+  - "rules-*.yaml"
+ruleFiles:
+  - "regex-hygiene.yaml"
+```
+
+Matching is line-based (no regex AST), so keep pack rules narrow — `\[0-9\]` deliberately does not match `[a-z0-9]`, `[^0-9]`, or `[0-9-]`, but it will flag the literal text `[0-9]` in prose. Note there is no catastrophic-backtracking detection to write: RE2 is linear-time, so regex hygiene here is brevity and readability only.
+
 ## Ignore files
 
 Ignore files are processed by default in this order: `.gitignore`, then `.ignore`, then `.reglintignore`. Supported syntax: blank lines, `#` comments, `!` negation, leading `/` anchoring, trailing `/` directory-only rules, and `*`/`?`/`**` wildcards. The last matching rule wins.
