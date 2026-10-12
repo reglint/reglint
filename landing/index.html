@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RegLint — Your own linter, defined in YAML regex</title>
+<meta name="description" content="Write your own linter rules in plain YAML. Scan any codebase with a single static binary. Enforce them in CI with GitHub annotations, SARIF, and exit-code gates.">
+<meta name="theme-color" content="#0b0e14">
+<link rel="canonical" href="https://reglint.iyaki.ar/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RegLint">
+<meta property="og:title" content="RegLint — Your own linter, defined in YAML regex">
+<meta property="og:description" content="Write your own linter rules in plain YAML. Scan any codebase with a single static binary. Enforce them in CI with GitHub annotations, SARIF, and exit-code gates.">
+<meta property="og:url" content="https://reglint.iyaki.ar/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "RegLint",
+      "url": "https://reglint.iyaki.ar"
+    },
+    {
+      "@type": "Organization",
+      "name": "reglint",
+      "url": "https://github.com/reglint",
+      "sameAs": [
+        "https://github.com/reglint/reglint",
+        "https://github.com/reglint/reglint-action",
+        "https://github.com/reglint/homebrew-tap"
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "RegLint",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Linux, macOS, Windows",
+      "url": "https://reglint.iyaki.ar",
+      "description": "Regex-based static analysis tool: write linter rules as plain YAML, scan any codebase with a single static Go binary, and report findings as console output, JSON, SARIF, or GitHub Actions PR annotations.",
+      "license": "https://github.com/reglint/reglint/blob/main/LICENSE",
+      "author": { "@type": "Organization", "name": "reglint" },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+  ]
+}
+</script>
+<style>
+  :root {
+    --bg: #0b0e14; --surface: #121722; --surface2: #1a2130;
+    --border: #2a3348; --fg: #e6e9f0; --muted: #9aa4b8;
+    --accent: #7c93ff; --accent-strong: #4051b5; --ok: #4caf7d;
+    --code-bg: #0e1420;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #ffffff; --surface: #f5f7fa; --surface2: #eef1f6;
+      --border: #d9dfe9; --fg: #1a2130; --muted: #5c6778;
+      --accent: #4051b5; --accent-strong: #31408f; --ok: #2e7d54;
+      --code-bg: #f0f3f8;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font: 16px/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    display: flex; align-items: center; gap: 24px;
+    padding: 18px 0; border-bottom: 1px solid var(--border);
+  }
+  nav .brand { font-weight: 700; font-size: 18px; color: var(--fg); }
+  nav .brand span { color: var(--accent); }
+  nav .links { margin-left: auto; display: flex; gap: 20px; font-size: 15px; }
+
+  header.hero { padding: 88px 0 56px; text-align: center; }
+  .badges { display: flex; gap: 8px; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
+  .badges img { height: 20px; }
+  h1 { font-size: clamp(32px, 5.4vw, 56px); line-height: 1.12; letter-spacing: -0.02em; }
+  h1 em { font-style: normal; color: var(--accent); }
+  .sub {
+    max-width: 720px; margin: 20px auto 0; color: var(--muted);
+    font-size: clamp(17px, 2.2vw, 20px);
+  }
+  .cta { display: flex; gap: 14px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 13px 26px; border-radius: 10px;
+    font-weight: 600; font-size: 16px; border: 1px solid transparent;
+  }
+  .btn.primary { background: var(--accent-strong); color: #fff; }
+  .btn.primary:hover { background: var(--accent); text-decoration: none; }
+  .btn.ghost { border-color: var(--border); color: var(--fg); background: var(--surface); }
+  .btn.ghost:hover { border-color: var(--accent); text-decoration: none; }
+
+  .install {
+    max-width: 680px; margin: 44px auto 0; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
+    display: grid; gap: 4px; text-align: left;
+  }
+  .install .cmd {
+    display: flex; align-items: center; gap: 10px;
+    font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    padding: 8px 10px; border-radius: 8px;
+  }
+  .install .cmd:hover { background: var(--surface2); }
+  .install .cmd code { flex: 1; color: var(--fg); overflow-x: auto; white-space: nowrap; }
+  .install .cmd .tag { color: var(--muted); font-family: inherit; font-size: 12px; min-width: 58px; }
+  .copy {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
+  }
+  .copy:hover { color: var(--fg); border-color: var(--accent); }
+
+  .pillars {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px; padding: 56px 0;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 26px;
+  }
+  .card h2 { font-size: 19px; margin-bottom: 10px; }
+  .card p { color: var(--muted); font-size: 15px; }
+  .card p code, .why code, .sub code {
+    font: 0.9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 5px; color: var(--fg);
+  }
+  .card a { font-size: 14px; font-weight: 600; display: inline-block; margin-top: 14px; }
+
+  .why { padding: 24px 0 64px; }
+  .why h2 { font-size: 26px; text-align: center; margin-bottom: 8px; }
+  .why .lead { text-align: center; color: var(--muted); max-width: 640px; margin: 0 auto 30px; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 720px; }
+  th, td { text-align: left; padding: 11px 14px; border: 1px solid var(--border); }
+  th { background: var(--surface2); }
+  td:first-child { font-weight: 600; }
+  .reglint-col { background: var(--surface); color: var(--fg); }
+
+  .band {
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: var(--surface); text-align: center; padding: 52px 24px;
+  }
+  .band h2 { font-size: 26px; margin-bottom: 10px; }
+  .band p { color: var(--muted); margin-bottom: 26px; }
+
+  footer {
+    padding: 36px 0 48px; color: var(--muted); font-size: 14px;
+    display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+  }
+  footer .links { margin-left: auto; display: flex; gap: 18px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <div class="brand">reg<span>lint</span></div>
+    <div class="links">
+      <a href="/quickstart/">Quickstart</a>
+      <a href="/cli/">CLI</a>
+      <a href="/faq/">FAQ</a>
+      <a href="https://github.com/reglint/reglint">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="badges">
+      <img src="https://img.shields.io/github/v/release/reglint/reglint" alt="Latest release">
+      <img src="https://img.shields.io/github/actions/workflow/status/reglint/reglint/quality.yml?label=quality" alt="quality">
+      <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
+    </div>
+    <h1>Your own linter,<br>defined in <em>YAML regex</em>.</h1>
+    <p class="sub">RegLint is a regex-based static analysis tool that ships as a single static Go binary. Write rules anyone can read, scan any language, and enforce them in CI — from one config file.</p>
+    <div class="cta">
+      <a class="btn primary" href="#install">Install in 30 seconds</a>
+      <a class="btn ghost" href="/quickstart/">Get started</a>
+    </div>
+
+    <div class="install" id="install">
+      <div class="cmd"><span class="tag">brew</span><code>brew install reglint/tap/reglint</code><button class="copy" data-copy="brew install reglint/tap/reglint">copy</button></div>
+      <div class="cmd"><span class="tag">curl</span><code>curl -fsSL https://raw.githubusercontent.com/reglint/reglint/main/install.sh | sh</code><button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/reglint/reglint/main/install.sh | sh">copy</button></div>
+      <div class="cmd"><span class="tag">go</span><code>go install github.com/reglint/reglint/cmd/reglint@latest</code><button class="copy" data-copy="go install github.com/reglint/reglint/cmd/reglint@latest">copy</button></div>
+    </div>
+  </header>
+
+  <section class="pillars">
+    <div class="card">
+      <h2>Rules in plain YAML</h2>
+      <p>A message, an RE2 regex, a severity — that's a rule. No DSL to learn, no server to run. Scope rules by glob, set severity levels, and fail builds with <code>--fail-on</code>.</p>
+      <a href="/configuration/">Read the config reference →</a>
+    </div>
+    <div class="card">
+      <h2>Built for AI agents</h2>
+      <p>Deterministic scans agents can trust and re-run. Scan only staged or added lines, suppress legacy findings with baselines, and let the <code>reglint-setup</code> skill configure everything.</p>
+      <a href="/agents/">Why agents and CI/CD →</a>
+    </div>
+    <div class="card">
+      <h2>CI gates without glue</h2>
+      <p>Native GitHub PR annotations, SARIF for code scanning, JSON for machines — all from one binary. Or use the checksum-verified <code>reglint-action</code> and pin it in one step.</p>
+      <a href="/ci/">See CI recipes →</a>
+    </div>
+  </section>
+
+  <section class="why">
+    <h2>Why RegLint?</h2>
+    <p class="lead">Between ad-hoc <code>grep</code> pipelines and heavyweight language analyzers sits the gap every team hits: rules you write yourself, enforced everywhere, today.</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th></th><th>grep + scripts</th><th>Secret scanners</th><th>Semgrep</th><th class="reglint-col">RegLint</th></tr>
+        <tr><td>Custom rules</td><td>Ad hoc pipelines</td><td>TOML rulesets</td><td>Per-language DSL</td><td class="reglint-col">One YAML schema, every file type</td></tr>
+        <tr><td>Language coverage</td><td>Any text</td><td>Secret patterns only</td><td>One language per ruleset</td><td class="reglint-col">Any text</td></tr>
+        <tr><td>Severity + fail threshold</td><td>DIY exit codes</td><td>Varies</td><td>Yes</td><td class="reglint-col">Built in (<code>--fail-on</code>)</td></tr>
+        <tr><td>Baseline of known findings</td><td>No</td><td>Varies</td><td>Varies</td><td class="reglint-col">Built in</td></tr>
+        <tr><td>PR annotations + SARIF</td><td>No</td><td>Varies</td><td>Extra tooling</td><td class="reglint-col">Native output formats</td></tr>
+        <tr><td>Deployment</td><td>Your scripts</td><td>Single binary</td><td>Binary or server</td><td class="reglint-col">Single static binary</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <div class="band">
+    <h2>Enforce your first rule in two commands</h2>
+    <p><code>reglint init</code> writes a starter config with secret-detection rules. <code>reglint analyze</code> runs it. That's the whole onboarding.</p>
+    <a class="btn primary" href="/quickstart/">Quickstart</a>
+  </div>
+
+  <footer>
+    <div>© 2026 reglint · MIT License</div>
+    <div class="links">
+      <a href="https://github.com/reglint/reglint">Source</a>
+      <a href="https://github.com/reglint/reglint/releases">Releases</a>
+      <a href="https://github.com/reglint/reglint-action">GitHub Action</a>
+      <a href="/overview/">Docs</a>
+    </div>
+  </footer>
+
+</div>
+<script>
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      navigator.clipboard.writeText(b.dataset.copy).then(function () {
+        b.textContent = 'copied';
+        setTimeout(function () { b.textContent = 'copy'; }, 1500);
+      });
+    });
+  });
+</script>
+</body>
+</html>
