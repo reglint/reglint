@@ -3,12 +3,16 @@ site_url: https://reglint.iyaki.ar
 repo_url: https://github.com/reglint/reglint
 repo_name: reglint/reglint
 strict: true
+extra:
+  analytics:
+    provider: custom
 plugins:
   - search
   - social
   - git-revision-date-localized
 theme:
   name: material
+  custom_dir: overrides
   features:
     - content.code.copy
     - navigation.sections
