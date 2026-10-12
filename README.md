@@ -163,6 +163,7 @@ reglint <command> [flags]
 Commands:
   analyze (alias: analyse)
   init
+  validate
   version
 ```
 
@@ -322,6 +323,8 @@ make quality
 ```
 
 ## Documentation
+
+Web documentation: <https://reglint.iyaki.ar>
 
 Technical specifications and design docs live in [`specs/`](specs/README.md): core architecture, data model, configuration, regex rules, ignore files, git integration, CLI contracts, formatter output contracts, and the release process.
 

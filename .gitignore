@@ -7,3 +7,5 @@ gremlins-output.json
 /oom
 /bin
 /dist
+/site
+/.cache
