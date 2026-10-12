@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "landing/**"
       - mkdocs.yml
       - requirements.txt
       - .github/workflows/docs.yml
@@ -33,6 +34,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Build site
         run: mkdocs build --strict
+      - name: Add landing page
+        run: cp landing/index.html site/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:

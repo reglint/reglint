@@ -2,7 +2,7 @@
 
 
 .PHONY: help quality all format lint test coverage test-coverage test-race test-flaky test-e2e-smoke test-e2e mutation test-mutation \
-	security arch scan build build-debug run analyze-example analyze-fail release-check release-snapshot
+	security arch scan build build-debug run analyze-example analyze-fail release-check release-snapshot docs-site
 
 GLOBAL_TARGETS ?=
 BUILD_OUT ?= bin/reglint
@@ -31,7 +31,8 @@ help:
 	"  make analyze-example Analyze test fixtures with example config" \
 	"  make analyze-fail    Analyze test fixtures with failOn config" \
 	"  make release-check    Validate goreleaser config" \
-	"  make release-snapshot Build release artifacts locally (no publish)"
+	"  make release-snapshot Build release artifacts locally (no publish)" \
+	"  make docs-site      Build docs site with marketing landing at /"
 
 quality: test lint test-race test-flaky test-coverage test-mutation security arch scan
 
@@ -103,3 +104,7 @@ analyze-example:
 
 analyze-fail:
 	go run ./cmd/reglint analyze --config testdata/rules/fail.yaml testdata/fixtures
+
+docs-site:
+	mkdocs build --strict
+	cp landing/index.html site/index.html
