@@ -107,5 +107,4 @@ analyze-fail:
 
 docs-site:
 	mkdocs build --strict
-	cp landing/index.html landing/og.png site/
-	python3 -c "import pathlib; p = pathlib.Path('site/sitemap.xml'); s = p.read_text(); p.write_text(s.replace('</urlset>', '<url><loc>https://reglint.iyaki.ar/</loc></url></urlset>'))"
+	python3 landing/build-extras.py
