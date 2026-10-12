@@ -137,7 +137,7 @@
     padding: 8px 10px; border-radius: 8px;
   }
   .install .cmd:hover { background: var(--surface2); }
-  .install .cmd code { flex: 1; color: var(--fg); overflow-x: auto; white-space: nowrap; }
+  .install .cmd code { flex: 1; min-width: 0; color: var(--fg); overflow-x: auto; white-space: nowrap; }
   .install .cmd .tag { color: var(--muted); font-family: inherit; font-size: 12px; min-width: 58px; }
   .copy {
     background: none; border: 1px solid var(--border); color: var(--muted);
@@ -209,8 +209,7 @@
     <h1>Your own linter,<br>defined in <em>YAML regex</em>.</h1>
     <p class="sub">RegLint is a regex-based static analysis tool that ships as a single static Go binary. Write rules anyone can read, scan any language, and enforce them in CI — from one config file.</p>
     <div class="cta">
-      <a class="btn primary" href="#install">Install in 30 seconds</a>
-      <a class="btn ghost" href="/quickstart/">Get started</a>
+      <a class="btn primary" href="/quickstart/">Get started</a>
     </div>
 
     <div class="install" id="install">
