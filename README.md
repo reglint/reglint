@@ -91,6 +91,13 @@ The skill is plain markdown — read or review it at [`skills/reglint-setup/SKIL
 
 Once installed, give your agent the follow-up skill so it *learns* from bugs: after fixing a mistake, [`skills/reglint-learn/SKILL.md`](skills/reglint-learn/SKILL.md) has it distill the root cause into a new `reglint-rules.yaml` entry — proven against the original offending snippet — so the same error can't ship again.
 
+Both skills are also installable with Vercel's [skills CLI](https://github.com/vercel-labs/skills), which copies them into `.agents/skills/`, wires your agent's skill directory, and pins them in a `skills-lock.json`:
+
+```bash
+npx skills add https://github.com/reglint/reglint -y                            # both skills
+npx skills add https://github.com/reglint/reglint --skill reglint-learn -y      # just one
+```
+
 ## Quickstart
 
 Create a starter rules file, then run a scan:

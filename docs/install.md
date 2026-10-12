@@ -56,6 +56,15 @@ Give your agent this instruction:
 
 The skill is plain markdown — read or review it at [`skills/reglint-setup/SKILL.md`](https://github.com/reglint/reglint/blob/main/skills/reglint-setup/SKILL.md).
 
+Or install with Vercel's [skills CLI](https://github.com/vercel-labs/skills), which copies the skills into `.agents/skills/`, wires your agent's skill directory, and pins them in a `skills-lock.json`:
+
+```bash
+npx skills add https://github.com/reglint/reglint -y                            # both skills
+npx skills add https://github.com/reglint/reglint --skill reglint-learn -y      # just one
+```
+
+`reglint-setup` installs and configures reglint; `reglint-learn` makes the agent turn every bug it fixes into a new rule, proven against the original offending snippet.
+
 ## Use in GitHub Actions
 
 ```yaml
