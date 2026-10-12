@@ -7,9 +7,10 @@ site = pathlib.Path("site")
 docs = pathlib.Path("docs")
 landing = pathlib.Path("landing")
 
-# Landing page + OG image (invisible to MkDocs, copied over the build output).
+# Landing page + OG image + logo (invisible to MkDocs, copied over the build output).
 shutil.copy(landing / "index.html", site / "index.html")
 shutil.copy(landing / "og.png", site / "og.png")
+shutil.copy(landing / "logo.png", site / "logo.png")
 
 # The landing is invisible to MkDocs' sitemap; add it.
 sm = site / "sitemap.xml"

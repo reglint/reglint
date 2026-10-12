@@ -25,13 +25,19 @@
   "@graph": [
     {
       "@type": "WebSite",
+      "@id": "https://reglint.iyaki.ar/#website",
       "name": "RegLint",
-      "url": "https://reglint.iyaki.ar"
+      "url": "https://reglint.iyaki.ar",
+      "inLanguage": "en",
+      "description": "Documentation for RegLint, a regex-based static analysis tool with rules in plain YAML and a single static Go binary.",
+      "publisher": { "@id": "https://reglint.iyaki.ar/#organization" }
     },
     {
       "@type": "Organization",
+      "@id": "https://reglint.iyaki.ar/#organization",
       "name": "reglint",
       "url": "https://github.com/reglint",
+      "logo": "https://reglint.iyaki.ar/logo.png",
       "sameAs": [
         "https://github.com/reglint/reglint",
         "https://github.com/reglint/reglint-action",
@@ -45,9 +51,21 @@
       "operatingSystem": "Linux, macOS, Windows",
       "url": "https://reglint.iyaki.ar",
       "image": "https://reglint.iyaki.ar/og.png",
+      "logo": "https://reglint.iyaki.ar/logo.png",
+      "downloadUrl": "https://github.com/reglint/reglint/releases",
+      "releaseNotes": "https://github.com/reglint/reglint/blob/main/CHANGELOG.md",
+      "featureList": [
+        "Custom linter rules in plain YAML (RE2 regex)",
+        "GitHub PR annotations via the github output format",
+        "SARIF output for GitHub code scanning",
+        "Baseline suppression of known findings",
+        "Git staged and diff scan modes with added-lines-only reporting",
+        "Ignore-file support (.gitignore, .ignore, .reglintignore)",
+        "Composable rule files via ruleFiles config and repeatable --rules flag"
+      ],
       "description": "Regex-based static analysis tool: write linter rules as plain YAML, scan any codebase with a single static Go binary, and report findings as console output, JSON, SARIF, or GitHub Actions PR annotations.",
       "license": "https://github.com/reglint/reglint/blob/main/LICENSE",
-      "author": { "@type": "Organization", "name": "reglint" },
+      "author": { "@id": "https://reglint.iyaki.ar/#organization" },
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
     }
   ]
