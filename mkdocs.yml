@@ -22,6 +22,7 @@ markdown_extensions:
       permalink: true
 nav:
   - Home: index.md
+  - AI Agents & CI/CD: agents.md
   - Install: install.md
   - Quickstart: quickstart.md
   - Configuration: configuration.md
