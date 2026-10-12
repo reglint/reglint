@@ -4,13 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RegLint — Your own linter, defined in YAML regex</title>
-<meta name="description" content="Write your own linter rules in plain YAML. Scan any codebase with a single static binary. Enforce them in CI with GitHub annotations, SARIF, and exit-code gates.">
+<meta name="description" content="Write your own linter rules in plain YAML. Scan any codebase with a single static binary. Enforce in CI with GitHub annotations, SARIF, and exit-code gates.">
 <meta name="theme-color" content="#0b0e14">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234051b5'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='bold' text-anchor='middle' fill='%23ffffff'%3E.*%3C/text%3E%3C/svg%3E">
 <link rel="canonical" href="https://reglint.iyaki.ar/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RegLint">
 <meta property="og:title" content="RegLint — Your own linter, defined in YAML regex">
-<meta property="og:description" content="Write your own linter rules in plain YAML. Scan any codebase with a single static binary. Enforce them in CI with GitHub annotations, SARIF, and exit-code gates.">
+<meta property="og:description" content="Write your own linter rules in plain YAML. Scan any codebase with a single static binary. Enforce in CI with GitHub annotations, SARIF, and exit-code gates.">
 <meta property="og:url" content="https://reglint.iyaki.ar/">
 <meta name="twitter:card" content="summary">
 <script type="application/ld+json">
@@ -50,14 +52,14 @@
   :root {
     --bg: #0b0e14; --surface: #121722; --surface2: #1a2130;
     --border: #2a3348; --fg: #e6e9f0; --muted: #9aa4b8;
-    --accent: #7c93ff; --accent-strong: #4051b5; --ok: #4caf7d;
+    --accent: #7c93ff; --accent-strong: #4051b5;
     --code-bg: #0e1420;
   }
   @media (prefers-color-scheme: light) {
     :root {
       --bg: #ffffff; --surface: #f5f7fa; --surface2: #eef1f6;
       --border: #d9dfe9; --fg: #1a2130; --muted: #5c6778;
-      --accent: #4051b5; --accent-strong: #31408f; --ok: #2e7d54;
+      --accent: #4051b5; --accent-strong: #31408f;
       --code-bg: #f0f3f8;
     }
   }
@@ -68,10 +70,14 @@
   }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
 
   nav {
-    display: flex; align-items: center; gap: 24px;
+    display: flex; align-items: center; gap: 24px; row-gap: 6px; flex-wrap: wrap;
     padding: 18px 0; border-bottom: 1px solid var(--border);
   }
   nav .brand { font-weight: 700; font-size: 18px; color: var(--fg); }
@@ -93,7 +99,7 @@
     font-weight: 600; font-size: 16px; border: 1px solid transparent;
   }
   .btn.primary { background: var(--accent-strong); color: #fff; }
-  .btn.primary:hover { background: var(--accent); text-decoration: none; }
+  .btn.primary:hover { filter: brightness(1.15); text-decoration: none; }
   .btn.ghost { border-color: var(--border); color: var(--fg); background: var(--surface); }
   .btn.ghost:hover { border-color: var(--accent); text-decoration: none; }
 
@@ -126,7 +132,7 @@
   }
   .card h2 { font-size: 19px; margin-bottom: 10px; }
   .card p { color: var(--muted); font-size: 15px; }
-  .card p code, .why code, .sub code {
+  .card p code, .why code {
     font: 0.9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     background: var(--code-bg); border: 1px solid var(--border);
     border-radius: 5px; padding: 1px 5px; color: var(--fg);
@@ -170,6 +176,7 @@
     </div>
   </nav>
 
+  <main>
   <header class="hero">
     <div class="badges">
       <img src="https://img.shields.io/github/v/release/reglint/reglint" alt="Latest release">
@@ -184,9 +191,9 @@
     </div>
 
     <div class="install" id="install">
-      <div class="cmd"><span class="tag">brew</span><code>brew install reglint/tap/reglint</code><button class="copy" data-copy="brew install reglint/tap/reglint">copy</button></div>
-      <div class="cmd"><span class="tag">curl</span><code>curl -fsSL https://raw.githubusercontent.com/reglint/reglint/main/install.sh | sh</code><button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/reglint/reglint/main/install.sh | sh">copy</button></div>
-      <div class="cmd"><span class="tag">go</span><code>go install github.com/reglint/reglint/cmd/reglint@latest</code><button class="copy" data-copy="go install github.com/reglint/reglint/cmd/reglint@latest">copy</button></div>
+      <div class="cmd"><span class="tag">brew</span><code>brew install reglint/tap/reglint</code><button type="button" class="copy" aria-live="polite" data-copy="brew install reglint/tap/reglint">copy</button></div>
+      <div class="cmd"><span class="tag">curl</span><code>curl -fsSL https://raw.githubusercontent.com/reglint/reglint/main/install.sh | sh</code><button type="button" class="copy" aria-live="polite" data-copy="curl -fsSL https://raw.githubusercontent.com/reglint/reglint/main/install.sh | sh">copy</button></div>
+      <div class="cmd"><span class="tag">go</span><code>go install github.com/reglint/reglint/cmd/reglint@latest</code><button type="button" class="copy" aria-live="polite" data-copy="go install github.com/reglint/reglint/cmd/reglint@latest">copy</button></div>
     </div>
   </header>
 
@@ -230,6 +237,8 @@
     <a class="btn primary" href="/quickstart/">Quickstart</a>
   </div>
 
+  </main>
+
   <footer>
     <div>© 2026 reglint · MIT License</div>
     <div class="links">
@@ -244,10 +253,26 @@
 <script>
   document.querySelectorAll('.copy').forEach(function (b) {
     b.addEventListener('click', function () {
-      navigator.clipboard.writeText(b.dataset.copy).then(function () {
+      var text = b.dataset.copy;
+      var done = function () {
         b.textContent = 'copied';
         setTimeout(function () { b.textContent = 'copy'; }, 1500);
-      });
+      };
+      var fallback = function () {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { if (document.execCommand('copy')) done(); } catch (e) {}
+        document.body.removeChild(ta);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } else {
+        fallback();
+      }
     });
   });
 </script>
