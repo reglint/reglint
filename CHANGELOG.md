@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-17
+
+### Fixed
+
+- `analyze` no longer aborts when a directory cannot be read (e.g. `chmod 000` or root-owned leftovers): unreadable directories are skipped with a `reglint: warning: skipping unreadable path` diagnostic on stderr, and the exit code reflects findings only. Unreadable ignore files still fail the run.
+- `exclude` globs (config or `--exclude`) now prune matching directories before their contents are read, so excluded-but-unreadable directories emit no warning and are never opened.
+- `--git-mode staged` and `--git-mode diff` scan only the git candidate set instead of walking the whole tree, so non-candidate (possibly unreadable) directories are never touched.
+- Config/CLI `exclude` globs now apply to files passed as explicit path arguments (e.g. `reglint analyze sub/c.php` with `exclude: ["sub/**"]` in the config), matching paths relative to the working directory like the default walk does.
+
+## [1.1.0] - 2026-10-12
+
+### Added
+
+- `validate` command to check config and rule files for errors without scanning.
+- Rule files: load additional rules via `ruleFiles` config and repeatable `--rules` flags, layered after the main config.
+
+### Changed
+
+- Release binaries are stripped (`-s -w`); unstripped debug builds available via `make build-debug`.
+
 ## [1.0.0] - 2026-09-29
 
 First stable release — no functional changes since 0.2.1. As of this version, RegLint commits to backward compatibility of its public surface: the `reglint-rules.yaml` rule schema, the `analyze`/`init`/`version` commands with their flags and exit codes (`0` success, `1` error, `2` `--fail-on` threshold met), the `console`, `json`, `sarif`, and `github` output formats, the baseline file format, and the ignore-file precedence. Breaking changes ship only in a new major version.
