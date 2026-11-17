@@ -24,7 +24,7 @@ func TestCollectEntriesAppliesIgnoreRules(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	entries, skipped, _, _, err := collectScanEntries(request)
+	entries, skipped, err := collectEntriesForTest(request)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -54,7 +54,7 @@ func TestCollectEntriesCountsIgnoredFilesAsSkipped(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	entries, skipped, _, _, err := collectScanEntries(request)
+	entries, skipped, err := collectEntriesForTest(request)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -87,7 +87,7 @@ func TestCollectEntriesAppliesGitCandidateScopeBeforeIgnoreRules(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	entries, skipped, _, _, err := collectScanEntries(request)
+	entries, skipped, err := collectEntriesForTest(request)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -120,7 +120,7 @@ func TestCollectEntriesGitCandidateScopeEmptyReturnsNoEntries(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	entries, skipped, _, _, err := collectScanEntries(request)
+	entries, skipped, err := collectEntriesForTest(request)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -149,7 +149,7 @@ func TestCollectEntriesAllowsIgnoreNegation(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	entries, err := collectEntriesForTest(request)
+	entries, _, err := collectEntriesForTest(request)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -178,7 +178,7 @@ func TestCollectEntriesAllowsNestedReglintIgnoreNegation(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	entries, err := collectEntriesForTest(request)
+	entries, _, err := collectEntriesForTest(request)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -205,7 +205,7 @@ func TestCollectEntriesNoIgnoreFilesScansIgnoredPaths(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	entries, skipped, _, _, err := collectScanEntries(request)
+	entries, skipped, err := collectEntriesForTest(request)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -234,7 +234,7 @@ func TestCollectEntriesReturnsIgnoreLoadErrors(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	_, err := collectEntriesForTest(request)
+	_, _, err := collectEntriesForTest(request)
 	if err == nil {
 		t.Fatal("expected error for invalid ignore pattern")
 	}
@@ -256,7 +256,7 @@ func TestCollectEntriesIgnoreNegationDoesNotOverrideExclude(t *testing.T) {
 		Concurrency:      1,
 	}
 
-	entries, err := collectEntriesForTest(request)
+	entries, _, err := collectEntriesForTest(request)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -295,11 +295,10 @@ func entryPaths(entries []fileEntry) []string {
 	return paths
 }
 
-func collectEntriesForTest(request Request) ([]fileEntry, error) {
-	entries, skipped, include, exclude, err := collectScanEntries(request)
-	_ = skipped
+func collectEntriesForTest(request Request) ([]fileEntry, int, error) {
+	entries, skipped, _, include, exclude, err := collectScanEntries(request)
 	_ = include
 	_ = exclude
 
-	return entries, err
+	return entries, skipped, err
 }

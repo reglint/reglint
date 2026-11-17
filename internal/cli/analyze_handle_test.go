@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -811,6 +812,80 @@ func TestSeverityRankUnknown(t *testing.T) {
 
 	if severityRank("bogus") != severityRankUnknown {
 		t.Fatalf("unexpected severity rank")
+	}
+}
+
+func TestHandleAnalyzeWarnsOnUnreadableDirectory(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("chmod permissions are unreliable on Windows")
+	}
+	if os.Geteuid() == 0 {
+		t.Skip("root ignores permission bits")
+	}
+
+	setAnalyzeCwd(t)
+
+	writeFile(t, ".", "a.php", "token=abc")
+	if err := os.Mkdir("locked", 0o755); err != nil {
+		t.Fatalf("failed to create directory: %v", err)
+	}
+	if err := os.Chmod("locked", 0); err != nil {
+		t.Fatalf("failed to chmod directory: %v", err)
+	}
+	t.Cleanup(func() {
+		_ = os.Chmod("locked", 0o755)
+	})
+	configPath := writeConfig(t, sampleConfig())
+
+	var output bytes.Buffer
+	var warnings bytes.Buffer
+	originalWarnings := warningWriter
+	warningWriter = &warnings
+	t.Cleanup(func() {
+		warningWriter = originalWarnings
+	})
+
+	code := HandleAnalyze([]string{"--config", configPath, "."}, &output)
+
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d (output: %q)", code, output.String())
+	}
+	if !strings.Contains(warnings.String(), "reglint: warning: skipping unreadable path:") {
+		t.Fatalf("expected warning on stderr, got %q", warnings.String())
+	}
+	if !strings.Contains(warnings.String(), "locked") {
+		t.Fatalf("expected warning mentioning locked dir, got %q", warnings.String())
+	}
+}
+
+func TestHandleAnalyzeAppliesConfigExcludeToExplicitPath(t *testing.T) {
+	setAnalyzeCwd(t)
+
+	if err := os.MkdirAll("sub", 0o755); err != nil {
+		t.Fatalf("failed to create sub dir: %v", err)
+	}
+	writeFile(t, "sub", "c.php", "zzz")
+	config := "exclude:\n" +
+		"  - \"sub/**\"\n" +
+		"rules:\n" +
+		"  - message: \"Found $0\"\n" +
+		"    regex: \"zzz\"\n" +
+		"    severity: \"error\"\n" +
+		"    paths: [\"**/*.php\"]\n"
+	configPath := writeConfig(t, config)
+
+	var output bytes.Buffer
+	code := HandleAnalyze([]string{
+		"--config", configPath,
+		"--fail-on", "error",
+		"sub/c.php",
+	}, &output)
+
+	if code != 0 {
+		t.Fatalf("expected exit code 0 (excluded), got %d (output: %q)", code, output.String())
+	}
+	if strings.Contains(output.String(), "zzz") {
+		t.Fatalf("expected no matches in output, got %q", output.String())
 	}
 }
 

@@ -1,8 +1,8 @@
 package ignore
 
 import (
+	"io/fs"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -11,14 +11,14 @@ func TestIgnoreLoaderWalkUsesConfiguredWalker(t *testing.T) {
 	called := false
 
 	originalWalker := walkDirectoryTree
-	walkDirectoryTree = func(rootPath string, fn filepath.WalkFunc) error {
+	walkDirectoryTree = func(rootPath string, fn fs.WalkDirFunc) error {
 		called = true
 		info, err := os.Stat(rootPath)
 		if err != nil {
 			return err
 		}
 
-		return fn(rootPath, info, nil)
+		return fn(rootPath, fs.FileInfoToDirEntry(info), nil)
 	}
 	t.Cleanup(func() {
 		walkDirectoryTree = originalWalker

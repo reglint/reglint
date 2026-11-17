@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"runtime"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -23,7 +25,7 @@ func TestCollectFilesFiltersByIncludeExclude(t *testing.T) {
 	writeFile(t, filepath.Join(root, "docs", "notes.md"))
 	writeFile(t, filepath.Join(root, "README.md"))
 
-	files, skipped, err := collectFiles(
+	files, skipped, _, err := collectFiles(
 		[]string{root},
 		[]string{"src/**", "docs/**"},
 		[]string{"**/vendor/**"},
@@ -90,7 +92,7 @@ func TestCollectFilesSkipsLargeFiles(t *testing.T) {
 	writeFileWithContent(t, filepath.Join(root, "src", "small.txt"), "data")
 	writeFileWithContent(t, filepath.Join(root, "src", "large.txt"), "0123456789")
 
-	files, skipped, err := collectFiles([]string{root}, []string{"src/**"}, nil, nil, 4)
+	files, skipped, _, err := collectFiles([]string{root}, []string{"src/**"}, nil, nil, 4)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -111,7 +113,7 @@ func TestCollectFilesSkipsBinaryFiles(t *testing.T) {
 	writeFileWithContent(t, filepath.Join(root, "src", "text.txt"), "hello")
 	writeFileBytes(t, filepath.Join(root, "src", "binary.bin"), []byte{0x00, 0x01, 0x02})
 
-	files, skipped, err := collectFiles([]string{root}, []string{"src/**"}, nil, nil, 1024)
+	files, skipped, _, err := collectFiles([]string{root}, []string{"src/**"}, nil, nil, 1024)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -614,7 +616,7 @@ func TestCollectEntriesKeepsRootOrderForSameRelPath(t *testing.T) {
 	writeFileWithContent(t, filepath.Join(rootA, "same.txt"), "alpha")
 	writeFileWithContent(t, filepath.Join(rootB, "same.txt"), "beta")
 
-	entries, skipped, err := collectEntries(
+	entries, skipped, _, err := collectEntries(
 		[]string{rootB, rootA},
 		[]string{"**/*"},
 		nil,
@@ -641,7 +643,8 @@ func TestCollectEntriesErrorsOnInvalidInclude(t *testing.T) {
 	root := t.TempDir()
 	writeFileWithContent(t, filepath.Join(root, "sample.txt"), "data")
 
-	_, _, err := collectEntries([]string{root}, []string{"["}, nil, nil, 1024)
+	_, _, warnings, err := collectEntries([]string{root}, []string{"["}, nil, nil, 1024)
+	_ = warnings
 	if err == nil {
 		t.Fatal("expected error for invalid include pattern")
 	}
@@ -792,6 +795,67 @@ func TestScanEntriesSkipsRuleWhenPathExcluded(t *testing.T) {
 	}
 }
 
+func TestCollectFileEntryUsesWorkingDirBase(t *testing.T) {
+	t.Chdir(t.TempDir())
+	writeFileWithContent(t, filepath.Join("sub", "c.php"), "zzz")
+
+	entries, skipped, isFile, err := collectFileEntry("sub/c.php", []string{"**/*.php"}, nil, nil, 1024)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !isFile {
+		t.Fatal("expected file root to be treated as file")
+	}
+	if skipped != 0 {
+		t.Fatalf("expected 0 skipped, got %d", skipped)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("expected 1 entry, got %d", len(entries))
+	}
+	if entries[0].relPath != "sub/c.php" {
+		t.Fatalf("expected relPath sub/c.php, got %q", entries[0].relPath)
+	}
+}
+
+func TestCollectFileEntryAppliesExcludeWithWorkingDirBase(t *testing.T) {
+	t.Chdir(t.TempDir())
+	writeFileWithContent(t, filepath.Join("sub", "c.php"), "zzz")
+
+	entries, skipped, isFile, err := collectFileEntry("sub/c.php", []string{"**/*.php"}, []string{"sub/**"}, nil, 1024)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !isFile {
+		t.Fatal("expected file root to be treated as file")
+	}
+	if len(entries) != 0 {
+		t.Fatalf("expected excluded entry to be dropped, got %v", entries)
+	}
+	if skipped != 0 {
+		t.Fatalf("expected 0 skipped (excluded, not skipped), got %d", skipped)
+	}
+}
+
+func TestCollectFileEntryFallsBackToBaseNameOutsideCwd(t *testing.T) {
+	outside := t.TempDir()
+	writeFileWithContent(t, filepath.Join(outside, "solo.php"), "zzz")
+	t.Chdir(t.TempDir())
+
+	entries, _, isFile, err := collectFileEntry(filepath.Join(outside, "solo.php"), []string{"**/*.php"}, nil, nil, 1024)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !isFile {
+		t.Fatal("expected file root to be treated as file")
+	}
+	if len(entries) != 1 {
+		t.Fatalf("expected 1 entry, got %d", len(entries))
+	}
+	if entries[0].relPath != "solo.php" {
+		t.Fatalf("expected basename fallback relPath solo.php, got %q", entries[0].relPath)
+	}
+}
+
 func TestScanEntriesErrorsOnInvalidRulePattern(t *testing.T) {
 	t.Parallel()
 
@@ -811,6 +875,93 @@ func TestScanEntriesErrorsOnInvalidRulePattern(t *testing.T) {
 	}
 	_ = filesScanned
 	_ = filesSkipped
+}
+
+func TestRunSkipsUnreadableDirectory(t *testing.T) {
+	t.Parallel()
+	if runtime.GOOS == "windows" {
+		t.Skip("chmod permissions are unreliable on Windows")
+	}
+	if os.Geteuid() == 0 {
+		t.Skip("root ignores permission bits")
+	}
+
+	root := t.TempDir()
+	writeFileWithContent(t, filepath.Join(root, "a.php"), "zzz")
+	locked := filepath.Join(root, "locked")
+	if err := os.Mkdir(locked, 0o755); err != nil {
+		t.Fatalf("failed to create directory: %v", err)
+	}
+	if err := os.Chmod(locked, 0); err != nil {
+		t.Fatalf("failed to chmod directory: %v", err)
+	}
+	defer func() {
+		_ = os.Chmod(locked, 0o755)
+	}()
+
+	result, err := Run(Request{
+		Roots: []string{root},
+		Rules: []rules.Rule{
+			{
+				Message:  "Found $0",
+				Regex:    "zzz",
+				Severity: "error",
+				Paths:    []string{"**/*"},
+			},
+		},
+		Include:          []string{"**/*"},
+		MaxFileSizeBytes: 1024,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.Stats.FilesScanned != 1 {
+		t.Fatalf("expected 1 scanned file, got %d", result.Stats.FilesScanned)
+	}
+	if len(result.Matches) != 1 {
+		t.Fatalf("expected 1 match, got %d", len(result.Matches))
+	}
+	if len(result.Warnings) != 1 {
+		t.Fatalf("expected 1 warning, got %v", result.Warnings)
+	}
+	if !strings.Contains(result.Warnings[0], "locked") {
+		t.Fatalf("expected warning mentioning locked dir, got %q", result.Warnings[0])
+	}
+}
+
+func TestCollectRootFilesPrunesExcludedDirBeforeRead(t *testing.T) {
+	t.Parallel()
+	if runtime.GOOS == "windows" {
+		t.Skip("chmod permissions are unreliable on Windows")
+	}
+	if os.Geteuid() == 0 {
+		t.Skip("root ignores permission bits")
+	}
+
+	for _, exclude := range [][]string{{"sub/**"}, {"sub"}} {
+		root := t.TempDir()
+		writeFileWithContent(t, filepath.Join(root, "sub", "x.php"), "zzz")
+		if err := os.Chmod(filepath.Join(root, "sub"), 0); err != nil {
+			t.Fatalf("failed to chmod directory: %v", err)
+		}
+		defer func() {
+			_ = os.Chmod(filepath.Join(root, "sub"), 0o755)
+		}()
+
+		files, skipped, warnings, err := collectRootFiles(root, []string{"**/*"}, exclude, nil, nil, 1024)
+		if err != nil {
+			t.Fatalf("unexpected error for exclude %v: %v", exclude, err)
+		}
+		if len(files) != 0 {
+			t.Fatalf("expected no files for exclude %v, got %v", exclude, files)
+		}
+		if skipped != 0 {
+			t.Fatalf("expected 0 skipped for exclude %v, got %d", exclude, skipped)
+		}
+		if len(warnings) != 0 {
+			t.Fatalf("expected no warnings for exclude %v (pruned before read), got %v", exclude, warnings)
+		}
+	}
 }
 
 func writeFile(t *testing.T, path string) {

@@ -1,12 +1,14 @@
 package ignore
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
 )
 
-var walkDirectoryTree = filepath.Walk
+var walkDirectoryTree = filepath.WalkDir
 
 // Load discovers ignore files under root and returns ordered rules.
 func Load(root string, files []string) ([]IgnoreRule, error) {
@@ -34,11 +36,15 @@ func newLoader(root string, files []string) *ignoreLoader {
 }
 
 func (loader *ignoreLoader) walk() error {
-	if err := walkDirectoryTree(loader.root, func(path string, info os.FileInfo, err error) error {
+	if err := walkDirectoryTree(loader.root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
+			if errors.Is(err, fs.ErrPermission) {
+				return nil
+			}
+
 			return err
 		}
-		if info == nil || !info.IsDir() {
+		if d == nil || !d.IsDir() {
 			return nil
 		}
 		loader.directories = append(loader.directories, path)
@@ -76,7 +82,7 @@ func (loader *ignoreLoader) loadDirectory(directory string, relBase string) erro
 		fullPath := filepath.Join(directory, fileName)
 		info, err := os.Stat(fullPath)
 		if err != nil {
-			if os.IsNotExist(err) {
+			if os.IsNotExist(err) || errors.Is(err, fs.ErrPermission) {
 				continue
 			}
 

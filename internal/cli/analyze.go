@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -79,6 +80,10 @@ func HandleAnalyze(args []string, out *bytes.Buffer) int {
 		writeError(out, err)
 
 		return exitCodeError
+	}
+
+	for _, warning := range result.Warnings {
+		_, _ = fmt.Fprintf(warningWriter, "reglint: warning: %s\n", warning)
 	}
 
 	if err := renderOutputs(formats, ruleset, cfg, consoleColors, result, out); err != nil {
@@ -563,6 +568,8 @@ func buildGitRequest(settings rules.GitSettings) *scan.GitSelectionRequest {
 }
 
 var checkGitCapabilities = git.CheckCapabilities
+
+var warningWriter io.Writer = os.Stderr
 
 var selectGitCandidateFiles = git.SelectCandidateFiles
 
