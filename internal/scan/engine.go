@@ -19,7 +19,7 @@ import (
 )
 
 var readFile = os.ReadFile
-var walkRootTree = filepath.Walk
+var walkRootTree = filepath.WalkDir
 
 const (
 	binaryProbeSize = 8000
@@ -37,7 +37,7 @@ func collectFiles(
 	exclude []string,
 	matcher []ignore.IgnoreRule,
 	maxFileSizeBytes int64,
-) ([]string, int, error) {
+) ([]string, int, []string, error) {
 	return collectFilesWithCandidates(roots, include, exclude, matcher, nil, maxFileSizeBytes)
 }
 
@@ -48,23 +48,27 @@ func collectFilesWithCandidates(
 	matcher []ignore.IgnoreRule,
 	candidateSet map[string]struct{},
 	maxFileSizeBytes int64,
-) ([]string, int, error) {
+) ([]string, int, []string, error) {
 	var files []string
+	var warnings []string
 	skipped := 0
 
 	for _, root := range roots {
-		rootFiles, rootSkipped, err := collectRootFiles(root, include, exclude, matcher, candidateSet, maxFileSizeBytes)
+		rootFiles, rootSkipped, rootWarnings, err := collectRootFiles(
+			root, include, exclude, matcher, candidateSet, maxFileSizeBytes,
+		)
 		if err != nil {
-			return nil, 0, err
+			return nil, 0, nil, err
 		}
 
 		skipped += rootSkipped
 		files = append(files, rootFiles...)
+		warnings = append(warnings, rootWarnings...)
 	}
 
 	sort.Strings(files)
 
-	return files, skipped, nil
+	return files, skipped, warnings, nil
 }
 
 func collectRootFiles(
@@ -74,34 +78,157 @@ func collectRootFiles(
 	matcher []ignore.IgnoreRule,
 	candidateSet map[string]struct{},
 	maxFileSizeBytes int64,
-) ([]string, int, error) {
+) ([]string, int, []string, error) {
 	root = filepath.Clean(root)
+
+	if candidateSet != nil {
+		return collectCandidateFiles(root, include, exclude, matcher, candidateSet, maxFileSizeBytes)
+	}
+
+	collector := &rootWalkCollector{
+		root:             root,
+		include:          include,
+		exclude:          exclude,
+		matcher:          matcher,
+		candidateSet:     candidateSet,
+		maxFileSizeBytes: maxFileSizeBytes,
+		files:            make([]string, 0),
+	}
+
+	if err := walkRootTree(root, collector.collectEntry); err != nil {
+		return nil, 0, nil, err
+	}
+
+	return collector.files, collector.skipped, collector.warnings, nil
+}
+
+// rootWalkCollector accumulates the results of one walked scan root.
+type rootWalkCollector struct {
+	root             string
+	include          []string
+	exclude          []string
+	matcher          []ignore.IgnoreRule
+	candidateSet     map[string]struct{}
+	maxFileSizeBytes int64
+	files            []string
+	warnings         []string
+	skipped          int
+}
+
+func (collector *rootWalkCollector) collectEntry(entryPath string, entry fs.DirEntry, err error) error {
+	if err != nil {
+		if errors.Is(err, fs.ErrPermission) {
+			collector.warnings = append(collector.warnings, fmt.Sprintf("skipping unreadable path: %s", entryPath))
+
+			return nil
+		}
+
+		return err
+	}
+	if entry.IsDir() {
+		pruned, pruneErr := walkDirPrune(collector.root, entryPath, collector.exclude)
+		if pruneErr != nil {
+			return pruneErr
+		}
+		if pruned {
+			return filepath.SkipDir
+		}
+
+		return nil
+	}
+
+	relPath, selected, fileSkipped, fileErr := classifyWalkedFile(
+		collector.root,
+		entryPath,
+		entry,
+		collector.include,
+		collector.exclude,
+		collector.matcher,
+		collector.candidateSet,
+		collector.maxFileSizeBytes,
+	)
+	if fileErr != nil {
+		return fileErr
+	}
+	if fileSkipped {
+		collector.skipped++
+
+		return nil
+	}
+	if selected {
+		collector.files = append(collector.files, relPath)
+	}
+
+	return nil
+}
+
+// classifyWalkedFile resolves a walked non-directory entry to a scan candidate:
+// its slash-normalized rel path, whether it is selected, and whether it counts
+// as skipped (ignore rules, size or binary heuristics).
+func classifyWalkedFile(
+	root string,
+	filePath string,
+	entry fs.DirEntry,
+	include []string,
+	exclude []string,
+	matcher []ignore.IgnoreRule,
+	candidateSet map[string]struct{},
+	maxFileSizeBytes int64,
+) (string, bool, bool, error) {
+	relPath, err := filepath.Rel(root, filePath)
+	if err != nil {
+		return "", false, false, err
+	}
+	relPath = filepath.ToSlash(relPath)
+	if relPath == "." || !candidateSelected(relPath, candidateSet) {
+		return relPath, false, false, nil
+	}
+
+	selected, fileSkipped, err := evaluateFile(
+		filePath,
+		relPath,
+		entry,
+		include,
+		exclude,
+		matcher,
+		maxFileSizeBytes,
+	)
+	if err != nil {
+		return "", false, false, err
+	}
+
+	return relPath, selected, fileSkipped, nil
+}
+
+// collectCandidateFiles scans only the git candidate set, never walking the
+// tree, so non-candidate (possibly unreadable) directories are not touched.
+func collectCandidateFiles(
+	root string,
+	include []string,
+	exclude []string,
+	matcher []ignore.IgnoreRule,
+	candidateSet map[string]struct{},
+	maxFileSizeBytes int64,
+) ([]string, int, []string, error) {
+	candidates := make([]string, 0, len(candidateSet))
+	for rel := range candidateSet {
+		candidates = append(candidates, rel)
+	}
+	sort.Strings(candidates)
+
 	files := make([]string, 0)
 	skipped := 0
 
-	if err := walkRootTree(root, func(filePath string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-
-		relPath, err := filepath.Rel(root, filePath)
-		if err != nil {
-			return err
-		}
-		relPath = filepath.ToSlash(relPath)
-		if relPath == "." {
-			return nil
-		}
-		if !candidateSelected(relPath, candidateSet) {
-			return nil
+	for _, rel := range candidates {
+		full := filepath.Join(root, filepath.FromSlash(rel))
+		info, err := os.Lstat(full)
+		if err != nil || info.IsDir() {
+			continue
 		}
 
 		selected, fileSkipped, err := evaluateFile(
-			filePath,
-			relPath,
+			full,
+			rel,
 			fs.FileInfoToDirEntry(info),
 			include,
 			exclude,
@@ -109,23 +236,52 @@ func collectRootFiles(
 			maxFileSizeBytes,
 		)
 		if err != nil {
-			return err
+			return nil, 0, nil, err
 		}
 		if fileSkipped {
 			skipped++
 
-			return nil
+			continue
 		}
 		if selected {
-			files = append(files, relPath)
+			files = append(files, rel)
 		}
-
-		return nil
-	}); err != nil {
-		return nil, 0, err
 	}
 
-	return files, skipped, nil
+	return files, skipped, nil, nil
+}
+
+// walkDirPrune decides whether a walked directory must be skipped before its
+// contents are read; pruning happens before ReadDir so excluded (and even
+// unreadable) directories are never opened.
+func walkDirPrune(root string, dirPath string, exclude []string) (bool, error) {
+	relDir, err := filepath.Rel(root, dirPath)
+	if err != nil {
+		return false, err
+	}
+	relDir = filepath.ToSlash(relDir)
+	if relDir == "." {
+		return false, nil
+	}
+
+	return dirPruned(relDir, exclude)
+}
+
+func dirPruned(relDir string, exclude []string) (bool, error) {
+	for _, pattern := range exclude {
+		if pattern == relDir || strings.HasPrefix(pattern, relDir+"/") {
+			return true, nil
+		}
+		matched, err := doublestar.Match(pattern, relDir)
+		if err != nil {
+			return false, err
+		}
+		if matched {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 type compiledRule struct {
@@ -157,7 +313,7 @@ type scanEntryWork struct {
 func Run(request Request) (Result, error) {
 	start := time.Now()
 
-	entries, skipped, include, exclude, err := collectScanEntries(request)
+	entries, skipped, warnings, include, exclude, err := collectScanEntries(request)
 	if err != nil {
 		return Result{}, err
 	}
@@ -184,7 +340,8 @@ func Run(request Request) (Result, error) {
 	sortMatches(matches)
 
 	result := Result{
-		Matches: matches,
+		Matches:  matches,
+		Warnings: warnings,
 		Stats: Stats{
 			FilesScanned: filesScanned,
 			FilesSkipped: filesSkipped,
@@ -196,24 +353,24 @@ func Run(request Request) (Result, error) {
 	return result, nil
 }
 
-func collectScanEntries(request Request) ([]fileEntry, int, []string, []string, error) {
+func collectScanEntries(request Request) ([]fileEntry, int, []string, []string, []string, error) {
 	include := normalizePatterns(request.Include)
 	exclude := normalizePatterns(request.Exclude)
 	if len(include) == 0 {
-		return nil, 0, nil, nil, errors.New("include patterns required")
+		return nil, 0, nil, nil, nil, errors.New("include patterns required")
 	}
 
 	candidateSet, err := buildCandidateSet(request)
 	if err != nil {
-		return nil, 0, nil, nil, err
+		return nil, 0, nil, nil, nil, err
 	}
 
 	matcherByRoot, err := loadIgnoreRules(request)
 	if err != nil {
-		return nil, 0, nil, nil, err
+		return nil, 0, nil, nil, nil, err
 	}
 
-	entries, skipped, err := collectEntriesWithCandidates(
+	entries, skipped, warnings, err := collectEntriesWithCandidates(
 		request.Roots,
 		include,
 		exclude,
@@ -222,10 +379,10 @@ func collectScanEntries(request Request) ([]fileEntry, int, []string, []string, 
 		request.MaxFileSizeBytes,
 	)
 	if err != nil {
-		return nil, 0, nil, nil, err
+		return nil, 0, nil, nil, nil, err
 	}
 
-	return entries, skipped, include, exclude, nil
+	return entries, skipped, warnings, include, exclude, nil
 }
 
 func buildCandidateSet(request Request) (map[string]struct{}, error) {
@@ -504,7 +661,7 @@ func collectEntries(
 	exclude []string,
 	matcherByRoot map[string][]ignore.IgnoreRule,
 	maxFileSizeBytes int64,
-) ([]fileEntry, int, error) {
+) ([]fileEntry, int, []string, error) {
 	return collectEntriesWithCandidates(roots, include, exclude, matcherByRoot, nil, maxFileSizeBytes)
 }
 
@@ -515,8 +672,9 @@ func collectEntriesWithCandidates(
 	matcherByRoot map[string][]ignore.IgnoreRule,
 	candidateSet map[string]struct{},
 	maxFileSizeBytes int64,
-) ([]fileEntry, int, error) {
+) ([]fileEntry, int, []string, error) {
 	entries := make([]fileEntry, 0)
+	var warnings []string
 	skipped := 0
 
 	for _, root := range roots {
@@ -530,7 +688,7 @@ func collectEntriesWithCandidates(
 			maxFileSizeBytes,
 		)
 		if err != nil {
-			return nil, 0, err
+			return nil, 0, nil, err
 		}
 		if isFile {
 			skipped += fileSkipped
@@ -539,7 +697,7 @@ func collectEntriesWithCandidates(
 			continue
 		}
 
-		files, fileSkipped, err := collectFilesWithCandidates(
+		files, fileSkipped, fileWarnings, err := collectFilesWithCandidates(
 			[]string{root},
 			include,
 			exclude,
@@ -548,9 +706,10 @@ func collectEntriesWithCandidates(
 			maxFileSizeBytes,
 		)
 		if err != nil {
-			return nil, 0, err
+			return nil, 0, nil, err
 		}
 		skipped += fileSkipped
+		warnings = append(warnings, fileWarnings...)
 		for _, relPath := range files {
 			entries = append(entries, fileEntry{root: root, relPath: relPath})
 		}
@@ -564,7 +723,7 @@ func collectEntriesWithCandidates(
 		return entries[i].root < entries[j].root
 	})
 
-	return entries, skipped, nil
+	return entries, skipped, warnings, nil
 }
 
 func collectFileEntry(
@@ -575,6 +734,22 @@ func collectFileEntry(
 	maxFileSizeBytes int64,
 ) ([]fileEntry, int, bool, error) {
 	return collectFileEntryWithCandidates(root, include, exclude, matcher, nil, maxFileSizeBytes)
+}
+
+// explicitFileBase normalizes explicit file arguments to cwd-relative paths so
+// config/CLI include/exclude globs share the same base as the default walk
+// (root "." from cwd). Falls back to parent dir + basename for paths outside
+// the working directory.
+func explicitFileBase(root string) (string, string) {
+	if abs, err := filepath.Abs(root); err == nil {
+		if wd, wdErr := os.Getwd(); wdErr == nil {
+			if rel, relErr := filepath.Rel(wd, abs); relErr == nil && rel != "." && !strings.HasPrefix(rel, "..") {
+				return wd, filepath.ToSlash(rel)
+			}
+		}
+	}
+
+	return filepath.Dir(root), filepath.ToSlash(filepath.Base(root))
 }
 
 func collectFileEntryWithCandidates(
@@ -593,12 +768,8 @@ func collectFileEntryWithCandidates(
 		return nil, 0, false, nil
 	}
 
-	rootDir := filepath.Dir(root)
-	relPath, err := filepath.Rel(rootDir, root)
-	if err != nil {
-		return nil, 0, true, err
-	}
-	relPath = filepath.ToSlash(relPath)
+	rootDir, relPath := explicitFileBase(root)
+	// shortcut: ignore files don't apply to explicit-file roots; excludes/includes use cwd base
 	if !candidateSelected(relPath, candidateSet) {
 		return nil, 0, true, nil
 	}

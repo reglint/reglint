@@ -117,12 +117,16 @@ func TestLoadSkipsIgnoreFileDirectories(t *testing.T) {
 	}
 }
 
-func TestLoadReturnsErrorOnUnreadableDirectory(t *testing.T) {
+func TestLoadSkipsUnreadableDirectory(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("chmod permissions are unreliable on Windows")
 	}
+	if os.Geteuid() == 0 {
+		t.Skip("root ignores permission bits")
+	}
 
 	root := t.TempDir()
+	writeFile(t, filepath.Join(root, ".ignore"), "root-rule\n")
 	blocked := filepath.Join(root, "blocked")
 	if err := os.Mkdir(blocked, 0755); err != nil {
 		t.Fatalf("failed to create directory: %v", err)
@@ -134,9 +138,15 @@ func TestLoadReturnsErrorOnUnreadableDirectory(t *testing.T) {
 		_ = os.Chmod(blocked, 0755)
 	}()
 
-	_, err := ignore.Load(root, []string{".ignore"})
-	if err == nil {
-		t.Fatal("expected error for unreadable directory")
+	rules, err := ignore.Load(root, []string{".ignore"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(rules) != 1 {
+		t.Fatalf("expected 1 rule, got %d", len(rules))
+	}
+	if rules[0].Pattern != "root-rule" {
+		t.Fatalf("expected root rule, got %q", rules[0].Pattern)
 	}
 }
 

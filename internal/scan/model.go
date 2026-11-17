@@ -53,6 +53,7 @@ type Stats struct {
 
 // Result aggregates matches and stats.
 type Result struct {
-	Matches []Match
-	Stats   Stats
+	Matches  []Match
+	Warnings []string `json:"-"`
+	Stats    Stats
 }
