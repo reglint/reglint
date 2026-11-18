@@ -27,7 +27,7 @@ func TestE2EFullWorkflowExistsForNightlyAndManualRuns(t *testing.T) {
 		"workflow_dispatch:",
 		"cron:",
 		"e2e-full:",
-		"run: make test-e2e",
+		"run: devenv shell -- make test-e2e",
 	}
 
 	for _, snippet := range requiredSnippets {

@@ -5,6 +5,8 @@ include:
 exclude:
   - "**/.git/**"
   - "**/vendor/**"
+  - "**/.devenv/**"
+  - "**/.cache/**"
 failOn: "warning"
 rules:
   # Deprecated standard library APIs

@@ -9,3 +9,9 @@ gremlins-output.json
 /dist
 /site
 /.cache
+
+# Devenv
+/.devenv/
+.devenv*
+devenv.local.nix
+devenv.local.yaml

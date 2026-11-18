@@ -1,0 +1,43 @@
+name: setup-devenv
+description: Nix + devenv (cachix-pulled) with Go module/build and pinned-tool caches
+inputs:
+  go-hash:
+    description: hashFiles('go.sum') from the calling workflow
+    required: true
+  tools-hash:
+    description: hashFiles('scripts/install-go-tools.sh') from the calling workflow
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: cachix/install-nix-action@v31.11.2
+
+    - uses: cachix/cachix-action@v16
+      with:
+        name: devenv
+
+    - name: Install devenv CLI (rev pinned by devenv.lock)
+      shell: bash
+      run: nix profile add "github:cachix/devenv/$(jq -r '.nodes.devenv.locked.rev' devenv.lock)"
+
+    - name: Go module and build cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: go-${{ inputs.go-hash }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ inputs.go-hash }}-
+
+    - name: Pinned tools cache
+      uses: actions/cache@v4
+      with:
+        path: .cache/go-tools
+        key: go-tools-${{ inputs.tools-hash }}-${{ github.sha }}
+        restore-keys: |
+          go-tools-${{ inputs.tools-hash }}-
+
+    - name: Enter devenv (build env, run reglint:setup)
+      shell: bash
+      run: devenv shell -- true
