@@ -69,7 +69,7 @@ Status: Implemented
 - Push of a `v*` tag: full release (publishes the GitHub Release).
 - `workflow_dispatch`: snapshot dry-run (`goreleaser release --snapshot --clean`) that builds all artifacts without publishing.
 
-GoReleaser is pinned to the same version in the workflow and `.devcontainer/install-go-tools.sh`; upgrade both together. A published release is immutable history: never delete or re-tag it — ship a patch release instead.
+GoReleaser is pinned to the same version in the workflow and `scripts/install-go-tools.sh`; upgrade both together. A published release is immutable history: never delete or re-tag it — ship a patch release instead.
 
 ### Version injection
 

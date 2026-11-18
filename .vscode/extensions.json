@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "golang.go",
+    "nhoizey.gremlins",
+    "jnoortheen.nix-ide"
+  ]
+}

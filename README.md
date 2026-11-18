@@ -474,7 +474,7 @@ Generate a baseline once with `--write-baseline`, commit it, and run with `--bas
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for devcontainer setup, git hooks, and the spec-first workflow.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for devenv setup, git hooks, and the spec-first workflow.
 
 ## Changelog
 

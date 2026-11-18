@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: ./.github/actions/setup-devenv
         with:
-          go-version: "~1.25.8"
+          go-hash: ${{ hashFiles('go.sum') }}
+          tools-hash: ${{ hashFiles('scripts/install-go-tools.sh') }}
       - name: e2e full matrix
         if: ${{ hashFiles('**/*.go') != '' }}
-        run: make test-e2e
+        run: devenv shell -- make test-e2e

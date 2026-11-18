@@ -4,13 +4,20 @@ Thanks for your interest in contributing. This guide covers setup and the conven
 
 ## Getting Started
 
-The easiest way to work on RegLint is the devcontainer: it ships Go 1.25, installs the quality toolchain (`.devcontainer/install-go-tools.sh`), and activates the git hooks (`lefthook install`) on container creation.
+RegLint develops on [devenv](https://devenv.sh) (Nix). One-time host setup: install Nix and [devenv](https://devenv.sh/getting-started/) 2.4, and add the devenv binary cache to `/etc/nix/nix.conf` (or `~/.config/nix/nix.conf`):
 
-Manual setup requires:
+```
+extra-substituters = https://devenv.cachix.org https://cache.nixos.org
+extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+```
 
-- Go 1.25
-- [lefthook](https://github.com/evilmartians/lefthook) — run `lefthook install` after cloning
-- The toolchain used by the Makefile: `golangci-lint`, `govulncheck`, `gosec`, `go-arch-lint`, `gremlins` (see `.devcontainer/install-go-tools.sh` for exact versions)
+Then, from the repo root:
+
+```bash
+devenv shell
+```
+
+The first shell builds the environment and runs the `reglint:setup` task, which installs the pinned quality toolchain into `.cache/go-tools` (see `scripts/install-go-tools.sh`) and activates the git hooks. Later shells are instant; the task only re-runs when the tool script changes. CI runs the same make targets inside this environment (`.github/actions/setup-devenv`), so toolchain versions are identical locally and in CI.
 
 Verify your setup:
 
@@ -18,6 +25,10 @@ Verify your setup:
 make build
 make test
 ```
+
+Manual (non-nix) setup still works: Go 1.25, [lefthook](https://github.com/evilmartians/lefthook) (`lefthook install` after cloning), and the toolchain from `GOBIN=… bash scripts/install-go-tools.sh` on your `PATH`.
+
+Working on the docs site (optional): `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt`, then `make docs-site`.
 
 ## Git Hooks
 
