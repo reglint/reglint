@@ -1,40 +1,10 @@
 # Agent Guidelines
 
-## Spec-First Workflow
+Read `CODING_STANDARDS.md` when writing or modifying code: scan behavior, code structure, and the quality bar live there.
 
-- Read `specs/README.md` before any feature work.
-- Assume specs describe intent, not implementation.
-- Verify reality in the codebase before claiming something exists.
-- Implement to spec patterns and data shapes; update specs only when asked.
-- When Writting specs, **NEVER** follow Test Driven Development practices. Write the spec first and stop.
-- For programming tasks, always load Test Driven Development skill.
+## Workflow
 
-## Testing and Quality Gates
-
-- Follow Test Driven Development practices: write failing tests before implementation.
-- Local suite: `make quality`.
-- Targeted runs:
-  - `make lint|test|test-race|coverage|coverage|mutation|security|arch`.
-- Coverage gate: min 90%.
-- Run core tests with `make test`.
-- Execute mutation testing with `make mutation` ONLY in final stages of the task development. **NEVER** execute mutation testing during the Test Driven Development process.
-
-## Build and Run
-
-- Build the CLI binary: `make build`.
-- Run from source (no build): `make run ARGS='<command> [flags]'`.
-- Example with test data (config + fixture): `make analyze-example`.
-- Example with failing config (failOn): `make analyze-fail`.
-
-## Tooling Expectations
-
-- Go version: 1.25 (see `go.mod`).
-- Mutation testing tool: `gremlins`.
-- Lint and security via `golangci-lint`, `govulncheck`, `go-sec`, `go-arch-lint`, `go-fmt`.
-
-## Implementation Guidance
-
-- Keep scans deterministic and reproducible.
-- Skip binary/oversized files per spec; record skipped file stats.
-- Treat match text as sensitive; avoid logging it in console.
-- When multiple code paths do similar work with small variations, consolidate into shared services with request structs.
+1. **Spec-first.** Before any feature work, read `specs/README.md`, the index of design docs and feature specs. Specs state intent, not implementation: implement to their patterns and data shapes, update them only when asked. Done when you can name the spec your change implements.
+2. **Ground truth.** Verify in the codebase before claiming something exists. Done when every existence claim traces to code you read.
+3. **Red-first.** Write the failing test, then make it pass. Spec-writing stops at the spec; tests belong to implementation. Done when each new behavior went red before green.
+4. **Quality gates.** Run `make quality` (`make help` self-documents every target). Done when `make quality` is green.
